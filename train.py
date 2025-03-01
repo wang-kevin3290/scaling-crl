@@ -15,7 +15,6 @@ import jax.numpy as jnp
 from brax import envs
 from etils import epath
 from dataclasses import dataclass
-from collections import namedtuple
 from typing import NamedTuple, Any
 from wandb_osh.hooks import TriggerWandbSyncHook
 from flax.training.train_state import TrainState
@@ -24,15 +23,11 @@ from brax.io import html
 
 from evaluator import CrlEvaluator
 from buffer import TrajectoryUniformSamplingQueue
-from memory_bank import MemoryBank, MemoryBankState
-
-from pathlib import Path
-import glob
 
 @dataclass
 class Args:
-    exp_name: str = "train" # os.path.basename(__file__)[: -len(".py")]
-    seed: int = random.randint(1, 1000) # 16
+    exp_name: str = "train"
+    seed: int = 1000
     torch_deterministic: bool = True
     cuda: bool = True
     track: bool = True
@@ -46,7 +41,7 @@ class Args:
     checkpoint: bool = True
 
     #environment specific arguments
-    env_id: str = "humanoid" # "ant_push" "ant_hardest_maze" "ant_big_maze" "humanoid" "ant"
+    env_id: str = "humanoid" # "ant_big_maze" "humanoid_u_maze" "arm_binpick_hard"
     episode_length: int = 1000
     # to be filled in runtime
     obs_dim: int = 0
@@ -65,52 +60,30 @@ class Args:
     batch_size: int = 256
     gamma: float = 0.99
     logsumexp_penalty_coeff: float = 0.1
-    
-    #adding in a batch_size_multiplier argument for critic vs. actor batch size
-    critic_batch_size_multiplier: float = 1.0 #this has to be less than or equal to 1
-    actor_batch_size_multiplier: float = 1.0 #this has to be less than 1
 
     max_replay_size: int = 10000
     min_replay_size: int = 1000
     
     unroll_length: int  = 62
-    
-    # ADDING IN A NETWORK WIDTH ARGUMENT
-    same_network_width: int = 0
-    network_width: int = 256
+
     critic_network_width: int = 256
     actor_network_width: int = 256
     actor_depth: int = 4
     critic_depth: int = 4
-    actor_skip_connections: int = 0 # 0 for no skip connections, >= 0 means the frequency of skip connections (every X layers)
-    critic_skip_connections: int = 0 # 0 for no skip connections, >= 0 means the frequency of skip connections (every X layers)
+    actor_skip_connections: int = 0 # 0 for no skip connections, >= 0 means the frequency of skip connections (every N layers)
+    critic_skip_connections: int = 0 # 0 for no skip connections, >= 0 means the frequency of skip connections (every N layers)
     
-    num_episodes_per_env: int = 1 #the number of episodes to sample from each env when sampling data 
-    #(to ensure number of batches is consistent as increase batch_size; for now, just a bandaid fix)
-    # should be something like batch_size / 256
-    training_steps_multiplier: int = 1 #should have the same effect as num_episodes_per_env, hmmm
-    use_all_batches: int = 0 # if 1, use all batches; if 0, use a random subset of batches
-    num_sgd_batches_per_training_step: int = 800 # this parameter so as to hold the number of batches constant (no matter batch_size, etc)
+    num_episodes_per_env: int = 1 #recommended to keep at 1
+    training_steps_multiplier: int = 1 #recommended to keep at 1
+    use_all_batches: int = 0 # recommended to keep at 0
+    num_sgd_batches_per_training_step: int = 800
     
-    mrn: int = 0
-    memory_bank: int = 0
-    memory_bank_size: int = batch_size # this can be modified too
-    
-    batchdiv2: int = 0 
-    # if 1, freeze gradients for second half of batch
-    # if 2, split in half along sa and freeze second half of g (Eysenbach ablation, remember it's forward loss)
-    #
-    # use batch_size * 2 and split in half and freeze gradients and all that (Eysenbach ablation), does not 
-    # TODO: if 2, modifies actor such that it uses the half batch size (isolate for critic ablation)
-    # can add 3, 4, etc (if diff between 1 and 2, maybe for batch_size ablation we need to have separate for actor and critic)
-    # add more for instead of discarding second half, just freeze gradients for second half so symmetric with first
-    
-    eval_actor: int = 0
+    eval_actor: int = 0 # recommended to keep at 0
     # if 0, use deterministic actor for evaluation
     # if 1, use stochastic actor for evaluation
     # if 2, sample two actions and take the one with the higher Q value
     # if K >= 2, sample K actions and take the one with the highest Q value
-    expl_actor: int = 1
+    expl_actor: int = 1 # recommended to keep at 1
     # if 0, use deterministic actor for exploration/collecting data
     # if 1, use stochastic actor for exploration/collecting data
     # if 2, sample two actions and take the one with the higher Q value
@@ -118,31 +91,9 @@ class Args:
     
     entropy_param: float = 0.5
     disable_entropy: int = 0
-    
     use_relu: int = 0
-    
-    resnet: str = "noishmistake4_nodense"
-    
     num_render: int = 10
-    
     save_buffer: int = 0
-    
-    
-    #INSTRUCTIONS TO RUN CHECKPOINT CONTINUATION:
-    #-replay_buffer not needed, just need prev to have args.pkl, final.pkl
-    #all you need to do is to add --load_prev_ckpt 1 and --prev_slurm_id <prev_slurm_id>
-    #-currently, it's set up that the previous run must have set wandb_run_id, env_steps, etc (so you can't continue an old run, they also must be run via this ckpt script)
-    load_prev_ckpt: int = 0 #set to 1 if this is a second/third/etc run and need to load previous checkpoint
-    prev_slurm_id: str = 0 #prev slurm id to reference to prev slurm's log file (will use this to find the prev's seed and wandb run id); set to 0 if this is the first run
-    
-    #These will be automatically set/filled in runtime
-    wandb_run_id: str = None #will be set as the randomly generated wandb run id for the first, prev's id for second/third/etc
-    current_epoch: int = None #will be instantiated to 0 if loading a previous checkpoint, the prev's for second/third/etc; then every epoch it's incremented by 1
-    training_state_env_steps: int = None #will be set at the end of training for first, start at prev's for second/third/etc
-    training_state_gradient_steps: int = None #will be set at the end of training for first, start at prev's for second/third/etc
-    
-    
-    
     
     # to be filled in runtime
     env_steps_per_actor_step : int = 0
@@ -240,36 +191,13 @@ class G_encoder(nn.Module):
         #Final layer
         x = nn.Dense(64, kernel_init=lecun_unfirom, bias_init=bias_init)(x)
         return x
-
-
-class Sym(nn.Module):
-    dim_hidden: int = 176  # First hidden layer dimension, 176 based off the paper
-    dim_embed: int = 64    # Final output size
-
-    @nn.compact
-    def __call__(self, x: jnp.ndarray):
-        x = nn.Dense(self.dim_hidden)(x)  # First hidden layer (176 units)
-        x = nn.relu(x)  # ReLU activation
-        x = nn.Dense(self.dim_embed)(x)  # Final embedding layer (64 units)
-        return x
-
-class Asym(nn.Module):
-    dim_hidden: int = 176  # First hidden layer dimension
-    dim_embed: int = 64    # Final output size
-
-    @nn.compact
-    def __call__(self, x: jnp.ndarray):
-        x = nn.Dense(self.dim_hidden)(x)  # First hidden layer (176 units)
-        x = nn.relu(x)  # ReLU activation
-        x = nn.Dense(self.dim_embed)(x)  # Final embedding layer (64 units)
-        return x
   
 class Actor(nn.Module):
     action_size: int
     norm_type = "layer_norm"
     network_width: int = 1024
     network_depth: int = 4
-    skip_connections: int = 0 # 0 for no skip connections, >= 0 means the frequency of skip connections (every X layers)
+    skip_connections: int = 0
     use_relu: int = 0
     LOG_STD_MAX = 2
     LOG_STD_MIN = -5
@@ -288,9 +216,7 @@ class Actor(nn.Module):
 
         lecun_unfirom = variance_scaling(1/3, "fan_in", "uniform")
         bias_init = nn.initializers.zeros
-        
-        print(f"x.shape: {x.shape}", flush=True)
-
+    
         #Initial layer
         x = nn.Dense(self.network_width, kernel_init=lecun_unfirom, bias_init=bias_init)(x)
         x = normalize(x)
@@ -299,8 +225,6 @@ class Actor(nn.Module):
         for i in range(self.network_depth // 4):
             x = residual_block(x, self.network_width, normalize, activation)
         #Final layer
-        # x = nn.Dense(64, kernel_init=lecun_unfirom, bias_init=bias_init)(x)
-
         mean = nn.Dense(self.action_size, kernel_init=lecun_unfirom, bias_init=bias_init)(x)
         log_std = nn.Dense(self.action_size, kernel_init=lecun_unfirom, bias_init=bias_init)(x)
         
@@ -318,7 +242,6 @@ class TrainingState:
     actor_state: TrainState
     critic_state: TrainState
     alpha_state: TrainState
-    memory_bank_state: MemoryBankState
 
 class Transition(NamedTuple):
     """Container for a transition"""
@@ -337,114 +260,10 @@ def save_params(path: str, params: Any):
     """Saves parameters in flax format."""
     with epath.Path(path).open('wb') as fout:
         fout.write(pickle.dumps(params))
-        
-def gpu_warmup():
-    """
-    Dummy code to perform some GPU utilization at the beginning
-    so the cluster doesn't kill the job for inactivity.
-    """
-    print("Starting GPU warmup...", flush=True)
-    import jax
-    import jax.numpy as jnp
 
-    # A quick matrix multiplication loop that exerts GPU usage
-    x = jnp.ones((1024, 1024))
-    y = jnp.ones((1024, 1024))
-    for _ in range(20):
-        x = jnp.dot(x, y)
-    x.block_until_ready()
-    print("GPU warmup complete.", flush=True)
-    
 if __name__ == "__main__":
-    gpu_warmup()
 
     args = tyro.cli(Args)
-    #we assume that a second/third/etc run will have the same args as the first run, just need to overwrite the seed.
-    #Also scraps the wandb run id and sets that to args.wandb_run_id
-    if args.load_prev_ckpt:
-        print(f"loading prev ckpt with prev_slurm_id: {args.prev_slurm_id}", flush=True)
-        assert args.prev_slurm_id != 0, "prev_slurm_id must be provided for second/third/etc runs"
-        import re
-        slurm_log_path = f"slurm_logs/slurm-{args.prev_slurm_id}.out"
-        with open(slurm_log_path, 'r') as f:
-            log_content = f.read()
-            # Search for "seed: <number>" pattern
-            seed_match = re.search(r'seed: (\d+)', log_content)
-            if seed_match:
-                args.seed = int(seed_match.group(1))
-                print(f"scraped prev seed: {args.seed} and set args.seed accordingly", flush=True)
-            else:
-                raise ValueError(f"Could not find seed in slurm log file: {slurm_log_path}")
-
-            # Search for "Wandb Run ID: <id>" pattern
-            wandb_id_match = re.search(r'Wandb Run ID: (\w+)', log_content)
-            if wandb_id_match:
-                prev_wandb_run_id = wandb_id_match.group(1)
-                print(f"scraped prev's run id: {prev_wandb_run_id} and set args.wandb_run_id accordingly", flush=True)
-                args.wandb_run_id = prev_wandb_run_id
-            else:
-                raise ValueError(f"Could not find wandb run id in slurm log file: {slurm_log_path}")
-            
-
-    def find_previous_run_folder(env_id: str, seed: int, expected_wandb_run_id: str) -> str:
-        """
-        Searches the 'runs' directory for folders matching runs/{env_id}_{seed}_*.
-        Sorts them by creation time (descending, newest first).
-        For each folder, loads args.pkl and checks if 'wandb_run_id' matches expected_wandb_run_id.
-        If found, returns the most recent valid folder. 
-        If multiple matches are found, prints a WARNING. 
-        If none are found, raises a FileNotFoundError.
-        """
-        runs_path = Path("runs")
-        pattern = runs_path / f"{env_id}_{seed}_*"
-        matching_folders = sorted(glob.glob(str(pattern)), key=os.path.getctime, reverse=True)
-
-        matched_folders = []
-        for i, folder in enumerate(matching_folders):
-            args_pkl_path = Path(folder) / "args.pkl"
-            print(f"Reading args.pkl from folder: {folder}", flush=True)
-            if args_pkl_path.exists():
-                with open(args_pkl_path, "rb") as f:
-                    loaded_args = pickle.load(f)
-                # If loaded_args is stored as a dict, ensure it has the wandb_run_id key
-                # if (
-                #     isinstance(loaded_args, dict) 
-                #     and "wandb_run_id" in loaded_args 
-                #     and loaded_args["wandb_run_id"] == expected_wandb_run_id
-                # ):
-                if loaded_args.wandb_run_id == args.wandb_run_id:
-                    # Found a match
-                    matched_folders.append(folder)
-                else:
-                    if i == 0:
-                        print(f"WARNING: the most recent runs folder with {env_id} and seed {seed} does not match expected wandb run id: {expected_wandb_run_id} (has {loaded_args.wandb_run_id})", flush=True)
-                    else:
-                        print(f"NOTE: found another match with with {env_id} and seed {seed} but with wandb run id: {loaded_args.wandb_run_id} rather than {expected_wandb_run_id}", flush=True)
-            else:
-                print(f"WARNING can't read {args_pkl_path}: args.pkl not found in folder: {folder}", flush=True)
-
-        # No matches found
-        if not matched_folders:
-            raise FileNotFoundError(
-                f"No matching folder found for env_id '{env_id}', seed '{seed}', run_id '{expected_wandb_run_id}'"
-            )
-
-        # More than one folder matched exactly
-        if len(matched_folders) > 1:
-            print(f"NOTE: {len(matched_folders)} matches found for env_id '{env_id}', seed '{seed}', run_id '{expected_wandb_run_id}', using most recent", flush=True)
-
-        # Return the most recent match
-        return matched_folders[0]
-
-    if args.load_prev_ckpt:
-        prev_run_folder = find_previous_run_folder(args.env_id, args.seed, args.wandb_run_id)
-        print(f"prev_run_folder: {prev_run_folder}", flush=True)
-        
-        prev_args_path = Path(prev_run_folder) / "args.pkl"
-        prev_params_path = Path(prev_run_folder) / "final.pkl"
-        prev_replay_buffer_path = Path(prev_run_folder) / "final_buffer.pkl"                
-        
-        
     
     # Print every arg
     print("Arguments:", flush=True)
@@ -463,49 +282,26 @@ if __name__ == "__main__":
 
     args.num_training_steps_per_epoch = (args.total_env_steps - args.num_prefill_env_steps) // (args.num_epochs * args.env_steps_per_actor_step)
     print(f"num_training_steps_per_epoch: {args.num_training_steps_per_epoch}", flush=True)
-
-    if args.same_network_width:
-        args.critic_network_width = args.network_width
-        args.actor_network_width = args.network_width
     
-    run_name = f"{args.env_id}{'_' + args.eval_env_id if args.eval_env_id else ''}_{args.batch_size}_critbx:{args.critic_batch_size_multiplier}_actbx:{args.actor_batch_size_multiplier}_batchdiv2:{args.batchdiv2}_{args.total_env_steps}_nenvs:{args.num_envs}_criticwidth:{args.critic_network_width}_actorwidth:{args.actor_network_width}_criticdepth:{args.critic_depth}_actordepth:{args.actor_depth}_actorskip:{args.actor_skip_connections}_criticskip:{args.critic_skip_connections}_epspenv:{args.num_episodes_per_env}_trainmult:{args.training_steps_multiplier}_mrn:{args.mrn}_memorybank:{args.memory_bank}_sgdbatchesptrainstep:{args.num_sgd_batches_per_training_step}_useallbatches:{args.use_all_batches}_eplen:{args.episode_length}_maxbuffersize:{args.max_replay_size}_evalactor:{args.eval_actor}_explactor:{args.expl_actor}_vislen:{args.vis_length}_critlr:{args.critic_lr}_actlr:{args.actor_lr}_alplr:{args.alpha_lr}_entropy:{args.entropy_param}_disable_entropy:{args.disable_entropy}_relu:{args.use_relu}_resnet:{args.resnet}_logsumexppenalty:{args.logsumexp_penalty_coeff}_{args.seed}"
+    run_name = f"{args.env_id}{'_' + args.eval_env_id if args.eval_env_id else ''}_{args.batch_size}_{args.total_env_steps}_nenvs:{args.num_envs}_criticwidth:{args.critic_network_width}_actorwidth:{args.actor_network_width}_criticdepth:{args.critic_depth}_actordepth:{args.actor_depth}_actorskip:{args.actor_skip_connections}_criticskip:{args.critic_skip_connections}_{args.seed}"
     print(f"run_name: {run_name}", flush=True)
     
     if args.track:
 
         if args.wandb_group ==  '.':
             args.wandb_group = None
-        
-        if not args.load_prev_ckpt:
-            wandb.init(
-                project=args.wandb_project_name,
-                entity=args.wandb_entity,
-                mode=args.wandb_mode,
-                group=args.wandb_group,
-                dir=args.wandb_dir,
-                config=vars(args),
-                name=run_name,
-                monitor_gym=True,
-                save_code=True,
-            )
-        else:
-            print(f"Resuming from previous checkpoint with Run ID: {prev_wandb_run_id}", flush=True)
-            wandb.init(
-                project=args.wandb_project_name,
-                entity=args.wandb_entity,
-                mode=args.wandb_mode,    # e.g., offline
-                group=args.wandb_group,
-                dir=args.wandb_dir,
-                config=vars(args),
-                name=run_name,
-                monitor_gym=True,
-                save_code=True,
-                id=prev_wandb_run_id,   # Set the wandb run id we scraped
-                resume="must",         # Since it's offline, wandb will look in ./wandb/offline-run-<time>-<run_id>
-            )
-        
-        print(f"Wandb Run ID: {wandb.run.id}", flush=True)
-        args.wandb_run_id = wandb.run.id
+            
+        wandb.init(
+            project=args.wandb_project_name,
+            entity=args.wandb_entity,
+            mode=args.wandb_mode,
+            group=args.wandb_group,
+            dir=args.wandb_dir,
+            config=vars(args),
+            name=run_name,
+            monitor_gym=True,
+            save_code=True,
+        )
 
         if args.wandb_mode == 'offline':
             wandb_osh.set_log_level("ERROR")
@@ -518,12 +314,10 @@ if __name__ == "__main__":
         save_path = Path(args.wandb_dir) / Path(short_run_name)
         os.mkdir(path=save_path)
 
-    if not args.load_prev_ckpt: #only generate this first key if it's the first run
-        random.seed(args.seed)
-        np.random.seed(args.seed)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
     key = jax.random.PRNGKey(args.seed)
-    key, buffer_key, env_key, eval_env_key, actor_key, sa_key, g_key, sym_key, asym_key, memory_bank_key = jax.random.split(key, 10)
-
+    key, buffer_key, env_key, eval_env_key, actor_key, sa_key, g_key = jax.random.split(key, 7)
 
     def make_env(env_id=args.env_id):
         print(f"making env with env_id: {env_id}", flush=True)
@@ -736,9 +530,8 @@ if __name__ == "__main__":
     eval_env_keys = jax.random.split(eval_env_key, args.num_envs)
     eval_env_state = jax.jit(eval_env.reset)(eval_env_keys)
     eval_env.step = jax.jit(eval_env.step)
-        
-    
-    
+
+
     # Network setup
     # Actor
     actor = Actor(action_size=action_size, network_width=args.actor_network_width, network_depth=args.actor_depth, skip_connections=args.actor_skip_connections, use_relu=args.use_relu)
@@ -753,55 +546,24 @@ if __name__ == "__main__":
     sa_encoder_params = sa_encoder.init(sa_key, np.ones([1, args.obs_dim]), np.ones([1, action_size]))
     g_encoder = G_encoder(network_width=args.critic_network_width, network_depth=args.critic_depth, skip_connections=args.critic_skip_connections, use_relu=args.use_relu)
     g_encoder_params = g_encoder.init(g_key, np.ones([1, args.goal_end_idx - args.goal_start_idx]))
-    # c = jnp.asarray(0.0, dtype=jnp.float32) (NOT USED IN CODE, WHATS THIS)
     
-    sym = Sym()
-    sym_params = sym.init(sym_key, np.ones([1, 64]))
-    asym = Asym()
-    asym_params = asym.init(asym_key, np.ones([1, 64]))
-    
-    
-    if not args.mrn:
-        critic_state = TrainState.create(
-            apply_fn=None,
-            params={
-                "sa_encoder": sa_encoder_params, 
-                "g_encoder": g_encoder_params
-                },
-            tx=optax.adam(learning_rate=args.critic_lr),
-        )
-    else:
-        critic_state = TrainState.create(
-            apply_fn=None,
-            params={
-                "sa_encoder": sa_encoder_params, 
-                "g_encoder": g_encoder_params,
-                "sym": sym_params,
-                "asym": asym_params},
-            tx=optax.adam(learning_rate=args.critic_lr),
-        )
+    critic_state = TrainState.create(
+        apply_fn=None,
+        params={
+            "sa_encoder": sa_encoder_params, 
+            "g_encoder": g_encoder_params
+            },
+        tx=optax.adam(learning_rate=args.critic_lr),
+    )
 
     # Entropy coefficient
-    target_entropy = -args.entropy_param * action_size # action_size = 8 for ant, 17 for humanoid, etc # USEED TO BE -0.5 * action_size
+    target_entropy = -args.entropy_param * action_size # action_size = 8 for ant, 17 for humanoid, etc
     log_alpha = jnp.asarray(0.0, dtype=jnp.float32)
     alpha_state = TrainState.create(
         apply_fn=None,
         params={"log_alpha": log_alpha},
         tx=optax.adam(learning_rate=args.alpha_lr),
     )
-        
-        
-    
-    def jit_wrap(memory_bank):
-        memory_bank.insert = jax.jit(memory_bank.insert)
-        memory_bank.sample = jax.jit(memory_bank.sample)
-        return memory_bank
-    
-    if args.memory_bank:
-        memory_bank = jit_wrap(MemoryBank(memory_bank_size=args.memory_bank_size, feature_dim=64, batch_size=args.batch_size))
-        memory_bank_state = jax.jit(memory_bank.init)(memory_bank_key)
-    else:
-        memory_bank_state = None
     
     # Trainstate
     training_state = TrainingState(
@@ -810,41 +572,7 @@ if __name__ == "__main__":
         actor_state=actor_state,
         critic_state=critic_state,
         alpha_state=alpha_state,
-        memory_bank_state=memory_bank_state,
     )
-    
-    if args.load_prev_ckpt:
-        prev_args = pickle.load(open(prev_args_path, "rb"))
-        training_state = training_state.replace(
-            env_steps=prev_args.training_state_env_steps,
-            gradient_steps=prev_args.training_state_gradient_steps,
-        )
-    
-    # If continuing from a previous run, load the saved parameters and OVERWRITE the initial parameters
-    if args.load_prev_ckpt:        
-        from brax.io import model
-        try:
-            params = model.load_params(prev_params_path)
-            alpha_params, actor_params, critic_params = params
-            sa_encoder_params, g_encoder_params = critic_params['sa_encoder'], critic_params['g_encoder']
-            print(f"Loaded alpha, actor, and critic params from {prev_params_path}", flush=True)
-        except:
-            print(f"Failed to load params from {prev_params_path}", flush=True)
-        
-        
-        # replace the initial parameters with the loaded ones
-        alpha_state = alpha_state.replace(params=alpha_params)
-        actor_state = actor_state.replace(params=actor_params)
-        critic_state = critic_state.replace(params={"sa_encoder": sa_encoder_params, "g_encoder": g_encoder_params})
-        
-        # wrap it all back into the training_state for easy handling
-        training_state = training_state.replace(
-            alpha_state=alpha_state,
-            actor_state=actor_state,
-            critic_state=critic_state,
-        )
-        
-        print(f"Loaded alpha, actor, and critic params from {prev_params_path} and replaced initial parameters in training_state", flush=True)
 
     #Replay Buffer
     dummy_obs = jnp.zeros((obs_size,))
@@ -916,42 +644,37 @@ if __name__ == "__main__":
         means, log_stds = actor.apply(training_state.actor_state.params, env_state.obs)
         stds = jnp.exp(log_stds)
         
-        # Sample K actions
         actions = jnp.stack([
             nn.tanh(means + stds * jax.random.normal(k, shape=means.shape, dtype=means.dtype))
             for k in keys
-        ])  # Shape: (K, batch_size, action_dim)
+        ])
         
-        # Compute Q values for each action
         state = env_state.obs[:, :args.obs_dim]
         goal = env_state.obs[:, args.obs_dim:]
         
-        # Compute SA and G representations for each action
         sa_reprs = jax.vmap(
             lambda a: sa_encoder.apply(
                 training_state.critic_state.params["sa_encoder"], 
                 state, 
                 a
             )
-        )(actions)  # Shape: (K, batch_size, repr_dim)
+        )(actions)
         
         g_repr = g_encoder.apply(
             training_state.critic_state.params["g_encoder"], 
             goal
-        )  # Shape: (batch_size, repr_dim)
-        
-        # Compute Q values as negative distances
+        ) 
+
         q_values = -jnp.sqrt(
             jnp.sum((sa_reprs - g_repr) ** 2, axis=-1)
-        )  # Shape: (K, batch_size)
+        )
         
-        # Select actions with highest Q values
-        best_action_idx = jnp.argmax(q_values, axis=0)  # Shape: (batch_size,)
+        best_action_idx = jnp.argmax(q_values, axis=0)
         best_actions = jnp.take_along_axis(
             actions,
             best_action_idx[None, :, None],
             axis=0
-        )[0]  # Shape: (batch_size, action_dim)
+        )[0]
         
         # Step environment with best actions
         nstate = env.step(env_state, best_actions)
@@ -1008,7 +731,7 @@ if __name__ == "__main__":
 
     @jax.jit
     def update_actor_and_alpha(transitions, training_state, key):
-        actor_batch_size = int(args.batch_size * args.actor_batch_size_multiplier)
+        actor_batch_size = args.batch_size
         transitions = jax.tree_util.tree_map(
             lambda x: x[:actor_batch_size], 
             transitions
@@ -1065,7 +788,7 @@ if __name__ == "__main__":
 
     @jax.jit
     def update_critic(transitions, training_state, key):
-        critic_batch_size = int(args.batch_size * args.critic_batch_size_multiplier)
+        critic_batch_size = args.batch_size
         transitions = jax.tree_util.tree_map(
             lambda x: x[:critic_batch_size], 
             transitions
@@ -1078,64 +801,23 @@ if __name__ == "__main__":
             
             sa_repr = sa_encoder.apply(sa_encoder_params, obs, action)
             g_repr = g_encoder.apply(g_encoder_params, transitions.observation[:, args.obs_dim:])
-                
-            if args.memory_bank:
-                new_memory_bank_state, (sa_bank, g_bank) = memory_bank.sample(training_state.memory_bank_state) #currently just sampling another batch_size, can modify in memory_bank.py later
-                sa_repr = jnp.concatenate([sa_repr, sa_bank], axis=0)
-                g_repr = jnp.concatenate([g_repr, g_bank], axis=0)
-                new_memory_bank_state = memory_bank.insert(new_memory_bank_state, sa_repr[:args.batch_size], g_repr[:args.batch_size])
-            else:
-                new_memory_bank_state = training_state.memory_bank_state
-                
-            if args.batchdiv2 == 1:
-                sa_repr = jnp.concatenate([sa_repr[:args.batch_size//2], jax.lax.stop_gradient(sa_repr[args.batch_size//2:])])
-                g_repr = jnp.concatenate([g_repr[:args.batch_size//2], jax.lax.stop_gradient(g_repr[args.batch_size//2:])])
-            elif args.batchdiv2 == 2:
-                sa_repr = sa_repr[:args.batch_size//2]
-                g_repr = jnp.concatenate([g_repr[:args.batch_size//2], jax.lax.stop_gradient(g_repr[args.batch_size//2:])])
-                
-            if args.mrn:
-                sym1 = sym.apply(critic_params['sym'], sa_repr)                    # (B, 64)
-                sym2 = sym.apply(critic_params['sym'], g_repr)                     # (B, 64)
-                dist_s = jnp.sum((sym1[:, None, :] - sym2[None, :, :]) ** 2, axis=-1) + 1e-6 # (B, B)
+             
+            # InfoNCE
+            logits = -jnp.sqrt(jnp.sum((sa_repr[:, None, :] - g_repr[None, :, :]) ** 2, axis=-1))       # shape = BxB
+            critic_loss = -jnp.mean(jnp.diag(logits) - jax.nn.logsumexp(logits, axis=1))
 
-                # Asymmetric path
-                asym1 = asym.apply(critic_params['asym'], sa_repr)                # (B, 64)
-                asym2 = asym.apply(critic_params['asym'], g_repr)                 # (B, 64)
-                res = jax.nn.relu(asym1[:, None, :] - asym2[None, :, :])         # (B, B, 64)
-                dist_a = jnp.max(res, axis=-1) + 1e-6                              # (B, B)
+            # logsumexp regularisation
+            logsumexp = jax.nn.logsumexp(logits + 1e-6, axis=1)
+            critic_loss += args.logsumexp_penalty_coeff * jnp.mean(logsumexp**2)
 
-                # Combining distances
-                logits = -(dist_s + dist_a)                                       # (B, B)
-                critic_loss = -jnp.mean(jnp.diag(logits) - jax.nn.logsumexp(logits, axis=1))  # scalar
-                
-                # logsumexp regularisation
-                logsumexp = jax.nn.logsumexp(logits + 1e-6, axis=1)
-                critic_loss += args.logsumexp_penalty_coeff * jnp.mean(logsumexp**2)
-
-            else:
-                # InfoNCE
-                logits = -jnp.sqrt(jnp.sum((sa_repr[:, None, :] - g_repr[None, :, :]) ** 2, axis=-1))       # shape = BxB
-                critic_loss = -jnp.mean(jnp.diag(logits) - jax.nn.logsumexp(logits, axis=1))
-
-                # logsumexp regularisation
-                logsumexp = jax.nn.logsumexp(logits + 1e-6, axis=1)
-                critic_loss += args.logsumexp_penalty_coeff * jnp.mean(logsumexp**2)
-
-            if 0:
-                I = jnp.eye(logits.shape[0])
-                correct = jnp.argmax(logits, axis=1) == jnp.argmax(I, axis=1)
-                logits_pos = jnp.sum(logits * I) / jnp.sum(I)
-                logits_neg = jnp.sum(logits * (1 - I)) / jnp.sum(1 - I)
-            else:
-                I, correct, logits_pos, logits_neg = jnp.zeros(1), jnp.zeros(1), jnp.zeros(1), jnp.zeros(1)
+            I, correct, logits_pos, logits_neg = jnp.zeros(1), jnp.zeros(1), jnp.zeros(1), jnp.zeros(1)
                 
 
-            return critic_loss, (logsumexp, I, correct, logits_pos, logits_neg, new_memory_bank_state)
+            return critic_loss, (logsumexp, I, correct, logits_pos, logits_neg)
             
-        (loss, (logsumexp, I, correct, logits_pos, logits_neg, new_memory_bank_state)), grad = jax.value_and_grad(critic_loss, has_aux=True)(training_state.critic_state.params, transitions, key)
+        (loss, (logsumexp, I, correct, logits_pos, logits_neg)), grad = jax.value_and_grad(critic_loss, has_aux=True)(training_state.critic_state.params, transitions, key)
         new_critic_state = training_state.critic_state.apply_gradients(grads=grad)
-        training_state = training_state.replace(critic_state = new_critic_state, memory_bank_state=new_memory_bank_state)
+        training_state = training_state.replace(critic_state = new_critic_state)
 
         metrics = {
             "categorical_accuracy": jnp.mean(correct),
@@ -1167,9 +849,6 @@ if __name__ == "__main__":
     @jax.jit
     def training_step(training_state, env_state, buffer_state, key, t):
         experience_key1, experience_key2, sampling_key, training_key, sgd_batches_key = jax.random.split(key, 5)
-
-        # print(f"Current training step: {t}")
-        # if t % args.training_steps_multiplier == 0:
         
         # update buffer
         env_state, buffer_state = get_experience(
@@ -1183,33 +862,6 @@ if __name__ == "__main__":
             env_steps=training_state.env_steps + args.env_steps_per_actor_step,
         )
             
-        # def collect_data():
-        #     new_env_state, new_buffer_state = get_experience(
-        #         training_state.actor_state,
-        #         env_state,
-        #         buffer_state,
-        #         experience_key1,
-        #     )
-        #     new_training_state = training_state.replace(
-        #         env_steps=training_state.env_steps + args.env_steps_per_actor_step
-        #     )
-        #     return new_training_state, new_env_state, new_buffer_state
-
-        # def skip_data_collection():
-        #     return training_state, env_state, buffer_state
-
-        # training_state, env_state, buffer_state = jax.lax.cond(
-        #     t % args.training_steps_multiplier == 0,
-        #     collect_data,
-        #     skip_data_collection
-        # )
-
-        # # sample actor-step worth of transitions
-        # buffer_state, transitions = replay_buffer.sample(buffer_state)
-        # print(f"transitions.observation.shape: {transitions.observation.shape}", flush=True)
-        
-        # Sample actor-step worth of transitions N times and concatenate them (NOTE: just a bandaid fix right now, currently can sample repeat data)
-        
         transitions_list = []
         for _ in range(args.num_episodes_per_env):
             buffer_state, new_transitions = replay_buffer.sample(buffer_state)
@@ -1221,21 +873,16 @@ if __name__ == "__main__":
             *transitions_list
         )
 
-        print(f"transitions.observation.shape (after {args.num_episodes_per_env} episodes per env): {transitions.observation.shape}", flush=True)   
-
         # process transitions for training
         batch_keys = jax.random.split(sampling_key, transitions.observation.shape[0])
         transitions = jax.vmap(TrajectoryUniformSamplingQueue.flatten_crl_fn, in_axes=(None, 0, 0))(
             (args.gamma, args.obs_dim, args.goal_start_idx, args.goal_end_idx), transitions, batch_keys
         )
-        print(f"transitions.observation.shape (after flatten_crl_fn): {transitions.observation.shape}", flush=True)
-
         
         transitions = jax.tree_util.tree_map(
             lambda x: jnp.reshape(x, (-1,) + x.shape[2:], order="F"),
             transitions,
         )
-        print(f"transitions.observation.shape (after first reshape): {transitions.observation.shape}", flush=True)
         
               
         permutation = jax.random.permutation(experience_key2, len(transitions.observation))
@@ -1244,14 +891,11 @@ if __name__ == "__main__":
         # I added this code, so as to ensure len(transitions.observation) is divisible by batch_size
         num_full_batches = len(transitions.observation) // args.batch_size
         transitions = jax.tree_util.tree_map(lambda x: x[:num_full_batches * args.batch_size], transitions)
-        print(f"transitions.observation.shape (after ensuring divisibility by batch_size): {transitions.observation.shape}", flush=True)
         
         transitions = jax.tree_util.tree_map(
             lambda x: jnp.reshape(x, (-1, args.batch_size) + x.shape[1:]),
             transitions,
         )
-
-        print(f"transitions.observation.shape (after processing): {transitions.observation.shape}", flush=True)
         
         if args.use_all_batches == 0:
             num_total_batches = transitions.observation.shape[0]
@@ -1262,9 +906,7 @@ if __name__ == "__main__":
             transitions = jax.tree_util.tree_map(
                 lambda x: x[selected_indices], 
                 transitions
-            )
-        print(f"transitions.observation.shape (after {args.use_all_batches}, selecting {args.num_sgd_batches_per_training_step} batches): {transitions.observation.shape}", flush=True)
-        
+            )        
         
         # take actor-step worth of training-step
         (training_state, _,), metrics = jax.lax.scan(sgd_step, (training_state, training_key), transitions)
@@ -1285,7 +927,6 @@ if __name__ == "__main__":
             (ts, es, bs,), metrics = training_step(ts, es, bs, train_key, t)
             return (ts, es, bs, k), metrics
 
-        #(training_state, env_state, buffer_state, key), metrics = jax.lax.scan(f, (training_state, env_state, buffer_state, key), (), length=args.num_training_steps_per_epoch * args.training_steps_multiplier)
         (training_state, env_state, buffer_state, key), metrics = jax.lax.scan(f, (training_state, env_state, buffer_state, key), jnp.arange(args.num_training_steps_per_epoch * args.training_steps_multiplier))
 
         
@@ -1294,36 +935,9 @@ if __name__ == "__main__":
 
     key, prefill_key = jax.random.split(key, 2)
 
-    
-    
-    if args.load_prev_ckpt:
-        if prev_replay_buffer_path.exists():
-            # Load the existing buffer
-            print(f"Loading previous replay buffer from: {prev_replay_buffer_path}", flush=True)
-            with open(prev_replay_buffer_path, "rb") as f:
-                buffer_data = pickle.load(f)
-                buffer_state = buffer_data['buffer_state']
-            print("Replay buffer successfully loaded.", flush=True)
-            
-            # If your replay buffer is expected to be large enough,
-            # you can skip the usual prefill. E.g.:
-            #   skip_prefill = True
-
-        else:
-            # If it's not absolutely required, you can fall back gracefully to an empty buffer
-            print(f"POTENTIALLY BIG WARNING: {prev_replay_buffer_path} not found. Using an empty replay buffer, and re-prefilling it", flush=True)
-            
-            # Optionally prefill to ensure min_replay_size
-            # This step re-collects some data into the empty buffer
-            # so that your training can start without error.
-            print("Prefilling replay buffer...", flush=True)
-            (training_state, env_state, buffer_state, key) = prefill_replay_buffer(
-                training_state, env_state, buffer_state, key
-            )
-    else:
-        training_state, env_state, buffer_state, _ = prefill_replay_buffer(
-            training_state, env_state, buffer_state, prefill_key
-        )
+    training_state, env_state, buffer_state, _ = prefill_replay_buffer(
+        training_state, env_state, buffer_state, prefill_key
+    )
     
 
     if args.eval_actor == 0:
@@ -1360,8 +974,8 @@ if __name__ == "__main__":
                 training_state, 
                 env, 
                 env_state, 
-                eval_actor_key,  # Use dedicated key for action sampling
-                args.eval_actor,  # Use eval_actor as K parameter
+                eval_actor_key, 
+                args.eval_actor,
                 extra_fields
             ),
             eval_env,
@@ -1370,20 +984,11 @@ if __name__ == "__main__":
             key=eval_env_key,
         )
     
-    #if we are not loading a previous checkpoint, we need to set the current epoch to 0
-    if not args.load_prev_ckpt:
-        args.current_epoch = 0
-    else:
-        prev_args = pickle.load(open(prev_args_path, "rb"))
-        args.current_epoch = prev_args.current_epoch
-        
-    start_epoch = args.current_epoch
-        
 
     training_walltime = 0
     print('starting training....', flush=True)
-    start_time = time.time()  # Add this line before the training loop
-    for ne in range(start_epoch, start_epoch + args.num_epochs):
+    start_time = time.time() 
+    for ne in range(args.num_epochs):
         
         t = time.time()
 
@@ -1406,10 +1011,10 @@ if __name__ == "__main__":
 
         metrics = evaluator.run_evaluation(training_state, metrics)
 
-        print(f"epoch {ne} out of {start_epoch + args.num_epochs} complete. metrics: {metrics}", flush=True)
+        print(f"epoch {ne} out of {args.num_epochs} complete. metrics: {metrics}", flush=True)
 
         if args.checkpoint:
-            if ne < 5 or ne >= start_epoch + args.num_epochs - 5 or ne % 10 == 0:
+            if ne < 5 or ne >= args.num_epochs - 5 or ne % 10 == 0:
                 # Save current policy and critic params.
                 params = (training_state.alpha_state.params, training_state.actor_state.params, training_state.critic_state.params)
                 path = f"{save_path}/step_{int(training_state.env_steps)}.pkl"
@@ -1423,17 +1028,6 @@ if __name__ == "__main__":
         
         hours_passed = (time.time() - start_time) / 3600
         print(f"Time elapsed: {hours_passed:.3f} hours", flush=True)
-        
-        args.current_epoch += 1
-    
-    
-    #if first run, save the training_state's env_steps and gradient_steps; if second/third/etc, it's actually same code (update your env and grad steps)
-    if not args.load_prev_ckpt:
-        args.training_state_env_steps = training_state.env_steps
-        args.training_state_gradient_steps = training_state.gradient_steps
-    else:
-        args.training_state_env_steps = training_state.env_steps
-        args.training_state_gradient_steps = training_state.gradient_steps
 
     
     if args.checkpoint:
@@ -1446,28 +1040,20 @@ if __name__ == "__main__":
     if args.capture_vis:
         def render_policy(training_state, save_path):
             """Renders the policy and saves it as an HTML file."""
-            # JIT compile the rollout function
             @jax.jit
             def policy_step(env_state, actor_params):
                 means, _ = actor.apply(actor_params, env_state.obs)
                 actions = nn.tanh(means)
                 next_state = env.step(env_state, actions)
-                return next_state, env_state  # Return current state for visualization
+                return next_state, env_state 
             
             rollout_states = []
             for i in range(args.num_render):
-                # env = Humanoid(backend=None or "spring")
-                # if args.eval_env_id:
-                #     env = make_env(args.eval_env_id)
-                # else:
-                #     env = make_env()
                 env = make_env(args.eval_env_id)
                 
-                # Initialize environment
                 rng = jax.random.PRNGKey(seed=i+1)
                 env_state = jax.jit(env.reset)(rng)
                 
-                # Collect rollout using jitted function
                 for _ in range(args.vis_length):
                     env_state, current_state = policy_step(env_state, training_state.actor_state.params)
                     rollout_states.append(current_state.pipeline_state)
@@ -1509,10 +1095,3 @@ if __name__ == "__main__":
                 print(f"Saved replay_buffer to {buffer_path}", flush=True)
             except Exception as e:
                 print(f"Error saving final replay buffer: {e}", flush=True)
-        
-        
-        
-        
-# (50000000 - 1024 x 1000) / 50 x 1024 x 62 = 15        #number of actor steps per epoch (which is equal to the number of training steps)
-# 1024 x 999 / 256 = 4000                               #number of gradient steps per actor step 
-# 1024 x 62 / 4000 = 16                                 #ratio of env steps per gradient step

@@ -87,7 +87,6 @@ def get_forward_path(maze_layout):
                 end = (i, j)
     return dfs(maze_layout, start, end)
 
-#this is a quasi dfs cuz there's only one path (not recursive, it's iterative)
 def dfs(maze_layout, start, end):
     dx = [0, 1, 0, -1]
     dy = [1, 0, -1, 0]
@@ -112,45 +111,6 @@ def dfs(maze_layout, start, end):
     
     path.append(end)
     return path
-
-# def get_start_goal(maze_layout, generalization_config, rng):
-#     sg_pairs = [] #valid start goal pairs
-    
-#     if "1f" in generalization_config:
-#         forward_path = get_forward_path(maze_layout)
-#         pairs = []
-#         for i in range(len(forward_path) - 1):
-#             pairs.append((forward_path[i], forward_path[i + 1]))
-#         sg_pairs.extend(pairs)
-#     if "2f" in generalization_config:
-#         forward_path = get_forward_path(maze_layout)
-#         pairs = []
-#         for i in range(len(forward_path) - 2):
-#             pairs.append((forward_path[i], forward_path[i + 2]))
-#         sg_pairs.extend(pairs)
-#     if "3f" in generalization_config:
-#         forward_path = get_forward_path(maze_layout)
-#         pairs = []
-#         for i in range(len(forward_path) - 3):
-#             pairs.append((forward_path[i], forward_path[i + 3]))
-#         sg_pairs.extend(pairs)
-#     if "4f" in generalization_config:
-#         forward_path = get_forward_path(maze_layout)
-#         pairs = []
-#         for i in range(len(forward_path) - 4):
-#             pairs.append((forward_path[i], forward_path[i + 4]))
-#         sg_pairs.extend(pairs)
-#     if "5f" in generalization_config:
-#         forward_path = get_forward_path(maze_layout)
-#         pairs = []
-#         for i in range(len(forward_path) - 5):
-#             pairs.append((forward_path[i], forward_path[i + 5]))
-#         sg_pairs.extend(pairs)
-    
-#     sg_pairs = jp.array(sg_pairs)
-#     idx = jax.random.randint(rng, (1,), 0, len(sg_pairs))
-#     random_pair = jp.array(sg_pairs[idx])[0]
-#     return random_pair
 
 
 def get_start_goal(maze_layout, generalization_config, rng):
@@ -178,57 +138,6 @@ def get_start_goal(maze_layout, generalization_config, rng):
     random_pair = jp.array(sg_pairs[idx])
     
     return random_pair
-
-
-
-
-    
-
-# def get_start_goal(maze_layout, generalization_config, rng):
-#     # Split rng for multiple random operations
-#     rng, rng1 = jax.random.split(rng)
-    
-#     # Parse available distances from config
-#     available_distances = []
-#     for i in range(1, 6):
-#         if f"{i}f" in generalization_config:
-#             available_distances.append(i)
-    
-#     # Randomly select one of the available distances
-#     available_distances = jp.array(available_distances)
-#     selected_distance = jax.random.choice(rng, available_distances)
-    
-#     # selected_distance = jax.random.randint(rng, (1,), 0, len(available_distances))
-#     # selected_distance = jp.array(available_distances[selected_distance])[0]  # Direct indexing is fine here
-    
-#     # Get pairs for the selected distance only
-#     forward_path = get_forward_path(maze_layout)
-#     pairs = []
-#     for i in range(len(forward_path) - selected_distance):
-#         pairs.append((forward_path[i], forward_path[i + selected_distance]))
-    
-#     # Select random pair from the chosen distance
-#     pairs = jp.array(pairs)
-#     idx = jax.random.randint(rng1, (1,), 0, len(pairs))
-#     random_pair = jp.array(pairs[idx])[0]
-#     return random_pair
-
-
-
-# def find_robot(structure, size_scaling):
-#     for i in range(len(structure)):
-#         for j in range(len(structure[0])):
-#             if structure[i][j] == RESET:
-#                 return i * size_scaling, j * size_scaling
-            
-# def find_goals(structure, size_scaling):
-#     goals = []
-#     for i in range(len(structure)):
-#         for j in range(len(structure[0])):
-#             if structure[i][j] == GOAL:
-#                 goals.append([i * size_scaling, j * size_scaling])
-
-#     return jp.array(goals)
 
 def get_maze_layout(maze_layout_name):
     if maze_layout_name == "u_maze":
@@ -467,8 +376,3 @@ class AntMazeGeneralization(PipelineEnv):
             qpos = qpos[2:]
 
         return jp.concatenate([qpos] + [qvel] + [target_pos])
-
-    # def _random_target(self, rng: jax.Array) -> Tuple[jax.Array, jax.Array]:
-    #     """Returns a random target location chosen from possibilities specified in the maze layout."""
-    #     idx = jax.random.randint(rng, (1,), 0, len(self.possible_goals))
-    #     return rng, jp.array(self.possible_goals[idx])[0]
