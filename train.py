@@ -312,7 +312,7 @@ if __name__ == "__main__":
         from datetime import datetime
         short_run_name = f"runs/{args.env_id}_{args.seed}_{datetime.now().strftime('%Y%m%d-%H%M%S')}"
         save_path = Path(args.wandb_dir) / Path(short_run_name)
-        os.mkdir(path=save_path)
+        os.mkdir(path=save_path, exist_ok=True)
 
     random.seed(args.seed)
     np.random.seed(args.seed)
