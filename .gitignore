@@ -1,6 +1,6 @@
 /wandb
+
 .ipynb_checkpoints/
-/runs
 /slurm_logs
 __pycache__/
 *.pyc
