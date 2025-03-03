@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities" />
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css" />
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-solarizedlight.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs-bibtex@2.1.0/prism-bibtex.min.js"></script>
+  <link rel="stylesheet" href="static/css/index.css" />
+
+  <title>1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities</title>
+
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-svg.js"></script>
+  <script>
+    function selectContent(query) {
+      var range = document.createRange()
+      var selection = window.getSelection()
+      var elem = document.querySelector(query)
+      range.selectNodeContents(elem)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  </script>
+</head>
+
+<body>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [
+          ["$", "$"],
+          ["\\(", "\\)"],
+        ],
+        displayMath: [
+          ["$$", "$$"],
+          ["\\[", "\\]"],
+        ],
+        processEscapes: true,
+        macros: {
+          planclass: "\\operatorname{\\mathbf{plan}}",
+          S: "\\mathcal{S}",
+          gS: "\\mathcal{S}",
+          cS: "\\mathcal{S}",
+          cB: "\\mathcal{B}",
+          cA: "\\mathcal{A}",
+          A: "\\mathcal{A}",
+          gA: "\\mathcal{A}",
+          D: "\\mathcal{D}",
+          R: "\\mathbb{R}",
+          E: "\\mathbb{E}",
+          P: "\\mathrm{P}",
+          var: "\\mathrm{Var}",
+          cov: "\\mathrm{Cov}",
+          argmin: "\\mathop{\\arg\\min}",
+          argmax: "\\mathop{\\arg\\max}",
+        },
+      },
+      svg: {
+        fontCache: "global",
+      },
+    }
+  </script>
+  <header>
+    <h1>1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities</h1>
+    <div class="authors">
+      <span class="author">
+        <a>Kevin Wang</a></span>
+      <span class="affil">1</span>
+      <span class="author">
+        <a>Ishaan Javali</a></span>
+      <span class="affil">1</span>
+      <span class="author">
+        <a>Michał Bortkiewicz</a></span>
+      <span class="affil">2</span>
+      <span class="author">
+        <a>Tomasz Trzcinski</a></span>
+      <span class="affil">2</span>
+      <span class="author">
+        <a href="https://ben-eysenbach.github.io">Benjamin Eysenbach</a></span>
+      <span class="affil">1</span>
+    </div>
+    <div class="notes">
+      <span class="affil">1</span>
+      <span class="institution">Princeton University</span>
+      <span class="affil">2</span>
+      <span class="institution">Warsaw University of Technology</span>
+    </div>
+    <div class="links">
+      <span class="link">
+        <a href="./static/pdf/scaling_rl.pdf" target="_blank" class="button">
+          <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper</span>
+        </a>
+      </span>
+      <span class="link">
+        <a href="https://arxiv.org/abs/2501.02709" class="button">
+          <span class="icon"><i class="ai ai-arxiv"></i></span><span>arXiv</span>
+        </a>
+      </span>
+      <span class="link">
+        <a href="https://anonymous.4open.science/r/scaling-crl-04B6/" class="button">
+          <span class="icon"><i class="fas fa-code"></i></span><span>Code</span>
+        </a>
+      </span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="summary">
+        <div class="video-grid">
+          <!-- First Row -->
+          <div class="video-group">
+            <h4>Humanoid</h4>
+            <div class="video-pair">
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/humanoid4.mp4" type="video/mp4">
+                </video>
+                <p>Original</p>
+              </div>
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/humanoid64.mp4" type="video/mp4">
+                </video>
+                <p>Ours</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-group">
+            <h4>Ant U4-Maze</h4>
+            <div class="video-pair">
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/ant_u4_maze4.mp4" type="video/mp4">
+                </video>
+                <p>Original</p>
+              </div>
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/ant_u4_maze64.mp4" type="video/mp4">
+                </video>
+                <p>Ours</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-group">
+            <h4>Ant Big Maze</h4>
+            <div class="video-pair">
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/ant_big_maze_4.mp4" type="video/mp4">
+                </video>
+                <p>Original</p>
+              </div>
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/ant_big_maze_64.mp4" type="video/mp4">
+                </video>
+                <p>Ours</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Second Row -->
+          <div class="video-group">
+            <h4>Arm Push Hard</h4>
+            <div class="video-pair">
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/arm_push_hard_4.mp4" type="video/mp4">
+                </video>
+                <p>Original</p>
+              </div>
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/arm_push_hard_64.mp4" type="video/mp4">
+                </video>
+                <p>Ours</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-group">
+            <h4>Arm Binpick Hard</h4>
+            <div class="video-pair">
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/arm_binpick_hard_4.mp4" type="video/mp4">
+                </video>
+                <p>Original</p>
+              </div>
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/arm_binpick_hard_64.mp4" type="video/mp4">
+                </video>
+                <p>Ours</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="video-group">
+            <h4>Humanoid Big Maze</h4>
+            <div class="video-pair">
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/humanoid_big_maze4.mp4" type="video/mp4">
+                </video>
+                <p>Original</p>
+              </div>
+              <div class="video-container">
+                <video autoplay loop muted playsinline>
+                  <source src="static/videos/humanoid_big_maze64.mp4" type="video/mp4">
+                </video>
+                <p>Ours</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <style>
+          .video-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            width: 100%;
+            margin-top: 70px;
+          }
+
+          .video-group {
+            text-align: center;
+          }
+
+          .video-group h4 {
+            margin: -10px 0;
+            color: #27579a;
+          }
+
+          /* Add margin to the second row */
+          .video-group:nth-child(n+4) {
+            margin-top: 20px;
+          }
+
+          .video-pair {
+            display: flex;
+            gap: 7px;
+            justify-content: center;
+          }
+
+          .video-container {
+            flex: 1;
+          }
+
+          .video-container video {
+            width: 100%;
+            border-radius: 4px;
+            margin-bottom: 2px;
+          }
+
+          .video-container p {
+            margin: 2px 0;
+            font-size: 0.9em;
+            color: #666;
+          }
+        </style>
+      </div>
+    </section>
+
+    <section>
+      <div class="abstract">
+        <h3>Abstract</h3>
+        <p>
+          Scaling up self-supervised learning has driven
+          breakthroughs in language and vision, yet comparable progress has remained elusive in
+          reinforcement
+          learning (RL). In
+          this paper, we introduce a self-supervised RL paradigm that unlocks
+          substantial improvements in scalability, with network depth serving as a critical factor.
+          Whereas
+          most RL papers in recent years have relied on
+          shallow architectures (around 2 – 5 layers), we
+          demonstrate that increasing the depth up to 1000
+          layers can significantly boost performance. Our
+          experiments are conducted in an unsupervised
+          goal-conditioned setting, where no demonstrations or rewards are provided, so an agent must
+          explore (from scratch) and learn how to maximize the likelihood of reaching commanded goals.
+          Evaluated on a diverse range of simulated locomotion and manipulation tasks, our approach
+          ranges from doubling performance to over 50×
+          on humanoid-based tasks. Increasing the model
+          depth not only increases success rates but also
+          qualitatively changes the behaviors learned, with
+          more sophisticated behaviors emerging as model
+          capacity grows.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>The Building Blocks of RL Scaling (Our Approach)</h2>
+      <div class="building-blocks-grid">
+        <div class="block">
+          <h3>1. Self-supervised learning</h3>
+          <p>
+            Our first step is to rethink the conventional wisdom above: "reinforcement learning" and
+            "self-supervised learning" are not diametric learning rules, but rather can be married together
+            into self-supervised RL
+            systems that explore and learn policies without reference to a reward function or
+            demonstrations. In this work,
+            we use one of the simplest self-supervised RL algorithms, contrastive RL (CRL).
+          </p>
+        </div>
+
+        <div class="block">
+          <h3>2. Data Scale</h3>
+          <p>
+            A key factor in scaling has been the vast amount of internet data available for
+            learning&mdash;meanwhile, data sparsity has often been a challenge in RL. In recent years,
+            however, there's been a proliferation of
+            GPU-accelerated RL environments, enabling the collection of hundreds of millions of environment
+            steps of
+            online RL data within a few hours. In this work, we leverage the JaxGCRL environment of robotic
+            locomotion,
+            navigation, and manipulation tasks.
+          </p>
+        </div>
+
+        <div class="block">
+          <h3>3. Signal Density</h3>
+          <p>
+            The success of scaling relies not only on data quantity, but also the density of training
+            signals: in
+            next-word prediction, every token in a text becomes a labeled example. By contrast, RL often
+            relies on sparse,
+            delayed rewards, with goal-conditioned RL providing only a single bit of reward feedback per
+            trajectory.
+            However, one underlying mechanism of the CRL algorithm is Hindsight Experience Replay (HER). HER
+            "relabels" each trajectory with the goal the agent actually achieved, so all trajectory data,
+            even unsuccessful attempts
+            that did not reach the goal reward, effectively become labeled samples for learning,
+            significantly improving
+            signal density in a self-supervised manner.
+          </p>
+        </div>
+
+        <div class="block">
+          <h3>4. Classification vs. Regression</h3>
+          <p>
+            Scaling in language and vision are based on a classification paradigm, where increased network
+            capacity
+            yields predictably improved cross-entropy loss. One related work is Farebrother et al. (2024),
+            who showed that discretizing
+            the TD objective of value-based RL into a categorical cross-entropy loss leads to improved
+            scaling properties.
+            In this vein, note that the CRL algorithm in our approach effectively uses a cross entropy loss
+            as well.
+            Its InfoNCE objective is a generalization of the cross-entropy loss, thereby performing RL tasks
+            by
+            classifying whether current states and actions belong to the same or different trajectory that
+            leads toward a goal
+            state.
+          </p>
+        </div>
+
+        <div class="block full-width" style="margin-top: 0;">
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="flex: 1; margin: 0;">
+              <h3 style="margin-top: 0;">5. Network Architecture</h3>
+              <p style="margin: 0;">
+                Finally, training large RL networks often yields training instabilities. Thus, scaling will
+                require
+                incorporating architectural techniques from prior work, including residual connections, layer
+                normalization, and Swish activation. These components enable increasing model capacity while
+                preserving training stability.
+              </p>
+            </div>
+            <div style="flex: 1; text-align: center;">
+              <img src="static/figures/architecture_flat.png" style="width: 93%; border-radius: 10px; margin: 0px;" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        .building-blocks-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+          margin: 20px 0;
+          perspective: 1000px;
+        }
+
+        .block {
+          background-color: #f5f5f5;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 20px;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+          transform-style: preserve-3d;
+        }
+
+        .block h3 {
+          color: #27579a;
+          margin-top: 0;
+        }
+
+        .block p {
+          margin-bottom: 0;
+        }
+
+        .full-width {
+          grid-column: 1 / -1;
+          margin-top: 20px;
+        }
+
+        /* Add hover effects */
+        .block:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h3#qualitative-evaluation {
+          scroll-margin-top: 20px;
+          text-align: center;
+          color: #27579a;
+        }
+      </style>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const blocks = document.querySelectorAll('.block');
+
+          blocks.forEach(block => {
+            block.addEventListener('mousemove', (e) => {
+              const rect = block.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
+
+              const centerX = rect.width / 2;
+              const centerY = rect.height / 2;
+
+              // Special case for full-width block - reduce rotation by half
+              const divisor = block.classList.contains('full-width') ? 1500 : 320;
+              const rotateX = -(y - centerY) / divisor;
+              const rotateY = (x - centerX) / divisor;
+
+              block.style.transform = `
+                                perspective(1000px)
+                                rotateX(${rotateX}deg)
+                                rotateY(${rotateY}deg)
+                                scale3d(1.005, 1.005, 1.005)
+                            `;
+
+              block.style.boxShadow = `
+                                ${-rotateY / 16}px ${rotateX / 16}px 20px rgba(39, 87, 207, 0.15),
+                                ${-rotateY / 32}px ${rotateX / 32}px 10px rgba(39, 87, 207, 0.11)
+                            `;
+            });
+
+            block.addEventListener('mouseleave', () => {
+              block.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+              block.style.boxShadow = 'none';
+            });
+          });
+        });
+      </script>
+    </section>
+
+    <section>
+      <h2>Empirical Results</h2>
+
+      <div class="yspace centered">
+        <div class="full-width margin"
+          style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 90%; margin: 0; text-align: center;">
+            <img src="static/figures/main_results.png" width="100%" />
+          </div>
+        </div>
+        <p class="caption" style="width: 90%; margin: 20px auto; margin-top: 0px;">
+          <b>Scaling network depth yields performance gains</b>
+          across a suite of locomotion, navigation, and manipulation tasks, ranging from doubling performance
+          to 50×
+          improvements on Humanoid-based tasks. Notably,
+          rather than scaling smoothly, performance often jumps at specific "critical" depths (e.g., 8 layers
+          on Ant
+          Big Maze, 64 on Humanoid U-Maze), which correspond to the emergence of qualitatively distinct
+          learned
+          <!-- policies (see <a href="#qualitative-evaluation">Qualitative Evaluation of Scaling Depth</a>). -->
+          policies (see the <a href="#qualitative-evaluation">section below</a>).
+        </p>
+      </div>
+
+      <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
+
+      <!-- <h3 id="qualitative-evaluation" style="text-align: center; color: #27579a;">Scaling Depth Unlocks
+        New/Qualitatively Different/Emergent
+        Capabilities</h3> -->
+      <h3 id="qualitative-evaluation">Qualitatively-Different Learned Behaviors Emerge With Depth</h3>
+      <div class="yspace centered">
+        <!-- Single row for emergent capabilities -->
+        <div class="full-width margin" style="width: 100%; margin: 0; display: flex; align-items: center;">
+          <div style="width: 61%; margin: 0;">
+            <img src="static/figures/emergent_capabilities.png" width="100%" />
+          </div>
+          <p class="caption" style="width: 35%; margin-left: 4%;">
+            <b>Increasing depth results in new capabilities:</b><br />
+            <b><i>Row 1</i></b>: A humanoid agent trained with network depth 4 collapses and throws itself
+            towards the
+            goal, as opposed to in <b><br /><i>Row 2</i></b>, where the depth 16 agent gains the ability to walk
+            upright.
+            <br /><b><i>Row 3</i></b>: At depth 64, the humanoid agent in U-Maze struggles to reach the goal
+            and
+            falls.
+            <br /><b><i>Row 4</i></b>: An impressively novel policy emerges at depth 256, as the agent
+            exhibits an
+            acrobatic strategy of compressing its body to vault over the maze wall.
+          </p>
+        </div>
+
+        <!-- Two column layout for remaining pairs -->
+        <div class="columns bypad centered" style="width: 100%; margin: 0; display: flex;">
+          <div style="width: 48%; margin-right: 2%;">
+            <div style="width: 70%; margin: 0 auto;">
+              <img src="static/figures/stitching.png" width="100%" />
+            </div>
+            <p class="caption" style="margin-top: 10px;">
+              <b>Deep networks exhibit improved generalization.</b><br />
+              <i>(Top left)</i> We modify the training setup of the Ant U-Maze environment such that
+              start-goal pairs
+              are separated by ≤3 units. This design guarantees
+              that no evaluation pairs <i>(top right)</i> were encountered during training, testing the
+              ability for
+              combinatorial generalization via "stitching."
+              <br />
+              <i>(Bottom)</i> Generalization ability improves as network depth grows from 4 to 16 to 64
+              layers.
+            </p>
+          </div>
+          <div style="width: 48%; margin-left: 2%;">
+            <div style="width: 84%; margin: 0 auto;">
+              <img src="static/figures/Q_vis.png" width="100%" />
+            </div>
+            <p class="caption" style="margin-top: 10px;">
+              <b>Deep networks learn better representations.</b><br />
+              In the U4-Maze, the start and goal positions are indicated by the ⊙ and <b>G</b> symbols
+              respectively, and
+              the visualized Q values are computed via the L₂
+              distance in the learned representation space, i.e., Q(s,a,g) = ‖φ(s,a) - ψ(g)‖₂. The shallow
+              depth-4
+              network <i>(left)</i> appears to naively rely on Euclidean proximity, exhibited by the high
+              Q values of
+              the semicircular gradient near the start position, despite the maze wall.
+              <br />
+              In the depth-64 heatmap <i>(right)</i>, the highest Q values cluster at the goal, gradually
+              tapering along
+              the maze's interior
+              boundary. These results highlight how increasing depth is important for learning value
+              functions in
+              goal-conditioned settings, which are characterized by long horizons and sparse rewards.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
+
+      <!-- <h3 style="text-align: center; color: #27579a;">Scaling Width and Batch Size -->
+      <!-- </h3> -->
+      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px">Scaling Depth Unlocks Batch Size Scaling and
+        Outperforms
+        Width
+        Scaling
+      </h3>
+      <!-- Two column layout for width and batch size -->
+      <div class="columns bypad centered" style="width: 100%; margin: 0; display: flex;">
+        <div style="width: 48%; margin-right: 2%;">
+          <div style="width: 100%; margin: 0 auto;">
+            <img src="static/figures/network_widths.png" width="100%" />
+          </div>
+          <p class="caption">
+            <b>Scaling network width vs. depth.</b><br />
+            We reflect findings from previous works which suggest that increasing network width can enhance
+            performance. However, in contrast to prior work, our method is able to scale depth, yielding
+            more impactful
+            performance gains while also being more parameter-efficient (similar performance for $50\times$
+            smaller
+            models). For instance, in the Humanoid environment, raising the width to 4096 (depth=4) fails to
+            match the performance achieved by simply doubling the depth to 8 (width=256). This comparative
+            advantage of
+            scaling depth seems more pronounced as the observation dimensionality increases.
+          </p>
+        </div>
+        <div style="width: 48%; margin-left: 2%; margin-top: -22px;">
+          <div style="width: 100%; margin: 0 auto;">
+            <img src="static/figures/batch_sizes.png" width="100%" />
+          </div>
+          <p class="caption">
+            <b>Deeper networks unlock batch size scaling.</b><br />
+            Scaling batch size has been an effective mechanism in many areas in ML, but it has not
+            demonstrated the same
+            effectiveness in reinforcement learning. Our findings indicate that, while scaling batch size
+            provides only
+            marginal benefits at the original network capacity, larger networks can effectively leverage
+            batch size
+            scaling to achieve further improvements.
+          </p>
+        </div>
+      </div>
+
+      <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
+
+      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px">How Far Can We Scale Depth?</h3>
+      <div class="yspace centered">
+        <div class="full-width margin" 
+             style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; gap: 20px;">
+          <div style="width: 45%; margin: 0; text-align: center;">
+            <img src="static/figures/depth_scaling_limits_2.png" width="100%" />
+          </div>
+          <p class="caption" style="width: 40%; margin: 0;">
+            <b>Exploring the limits of scaling.</b><br />
+            We push the boundaries of network depth scaling up to 1024 layers. In Humanoid Big Maze, 
+            performance plateaus. However, on Humanoid U-Maze, we observe continued performance 
+            improvements with network depths of 256 and 1024 layers. This may be because the maneuver 
+            being learned (flipping over the wall) is exceptionally complex (see 
+            <a href="#qualitative-evaluation">Figure above</a>), and requires greater network depth 
+            to learn. Note that for the 1024-layer training runs, we observed the actor loss exploding at the 
+            onset of training, so we maintained the actor depth at 512 while using 1024-layer networks 
+            only for the two critic encoders.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Summary of Key Empirical Findings</h2>
+      <div class="findings-container">
+        <ul class="key-findings">
+          <li>
+            CRL is scalable to depths unattainable by other RL proprioceptive algorithms (1000+ layers),
+            perhaps due
+            to
+            its self-supervised nature.
+          </li>
+          <li>
+            Both width and depth are key factors influencing CRL's performance, but depth achieves greater
+            performance
+            and better parameter-efficiency (similar performance for 50× smaller models).
+          </li>
+          <li>
+            We observe signs of emergent behaviors in CRL with deep neural networks, such as humanoid
+            learning to walk
+            and navigate a maze.
+          </li>
+          <li>
+            Scale unlocks learning difficult maze topologies.
+          </li>
+          <li>
+            Batch size scaling occurs in CRL for deep networks.
+          </li>
+          <li>
+            CRL benefits from both the actor and critic scale.
+          </li>
+        </ul>
+      </div>
+
+      <style>
+        .findings-container {
+          background-color: #f5f5f5;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 25px 30px;  /* Increased padding */
+          margin: 20px 0;
+          width: 100%;        /* Changed from 70% to 100% */
+          box-sizing: border-box;
+        }
+
+        .key-findings {
+          margin: 0;
+          padding-left: 25px;  /* Slightly increased padding */
+          columns: 2;         /* Split into 2 columns */
+          column-gap: 40px;   /* Space between columns */
+        }
+
+        .key-findings li {
+          margin-bottom: 15px;  /* Increased spacing between items */
+          break-inside: avoid;  /* Prevent items from splitting across columns */
+        }
+
+        .key-findings li:last-child {
+          margin-bottom: 0;
+        }
+      </style>
+    </section>
+
+    <section>
+      <h2>
+        ${\bf B\kern-.05em{\small I\kern-.025em B}\kern-.08em
+        T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}$
+      </h2>
+      <!--  <pre class="language-bibtex bibtex" id="bibtex" onclick="selectContent('#bibtex')"><code>@inproceedings{myers2025horizon,
+    author    = {Myers, Vivek and Ji, Catherine and Eysenbach, Benjamin},
+    booktitle = {{International Conference} on {Learning Representations}},
+    title     = {{Horizon Generalization} in {Reinforcement Learning}},
+    url       = {https://arxiv.org/abs/2501.02709},
+    year      = {2025}, -->
+      <pre class="language-bibtex bibtex" id="bibtex" onclick="selectContent('#bibtex')"><code>@article{wang2024thousand,
+    title     = {1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities},
+    author    = {Wang, Kevin and Javali, Ishaan and Bortkiewicz, Micha{\l} and Trzcinski, Tomasz and Eysenbach, Benjamin},
+    journal   = {arXiv preprint arXiv:2501.02709},
+    year      = {2024}
+}</code></pre>
+    </section>
+  </main>
+</body>
+
+</html>

@@ -1,0 +1,431 @@
+body {
+  font-family: Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", Georgia, serif;
+  line-height: 1.6;
+  color: #333;
+  max-width: 60em;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+h1 {
+  color: #2c3e50;
+}
+
+h2,
+h3,
+h4 {
+  color: #34495e;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  margin: 20px 0;
+}
+
+a {
+  color: #20638f;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #aa551c;
+}
+
+section img,
+section video {
+  width: 100%;
+}
+
+.chart {
+  width: 100%;
+  height: 400px;
+  background-color: #f0f0f0;
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+code {
+  background-color: #f0f0f0;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+pre {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 20px;
+}
+
+.link img {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 5px;
+}
+
+.link a {
+  text-decoration: none;
+  color: #fff;
+}
+
+.link .icon {
+  padding-right: 5pt;
+}
+
+.university-logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.university-logos img {
+  max-height: 60px;
+  margin: 0 10px;
+}
+
+.authors {
+  margin-bottom: 0.5ex;
+  font-size: 15pt;
+}
+
+.notes {
+  margin-bottom: 1ex;
+  font-size: 15pt;
+}
+
+.author {
+  font-weight: bold;
+}
+
+.authors .author ~ .author {
+  margin-left: 1.5em;
+}
+
+.authors .affil + .author {
+  margin-left: 2em;
+}
+
+:is(.author.equal, .author.equaladv) + .affil + .author {
+  padding-left: 0.5em;
+}
+
+.notes .affil {
+  font-weight: normal;
+  font-size: 10pt;
+  vertical-align: 5pt;
+  display: inline-block;
+  width: 3pt;
+}
+
+.notes :is(.institution, .notice) + span {
+  margin-left: 1.5em;
+}
+
+.notes :is(.institution, .notice) + .institution {
+  margin-left: 2em;
+}
+
+.author + .affil {
+  font-weight: normal;
+  font-size: 11pt;
+  vertical-align: 5pt;
+  display: inline-block;
+  width: 0.5pt;
+  margin-left: -3pt;
+}
+
+:is(.author.equal, .author.equaladv) + .affil:before {
+  vertical-align: none;
+  content: ",";
+  padding-right: 1.5pt;
+}
+
+:is(.author.equal, .author.equaladv) + .affil {
+  display: inline-block;
+  vertical-align: 7pt;
+  margin-left: 0pt;
+}
+
+.author.equal:after {
+  content: "*";
+  font-size: 19pt;
+  font-weight: normal;
+  padding-right: 0pt;
+  width: 0.5pt;
+}
+
+.author.equaladv:after {
+  content: "\2020";
+  font-weight: normal;
+  vertical-align: 6pt;
+  font-size: 14pt;
+  width: 0.5pt;
+}
+
+.author.equaladv:after,
+.author.equal:after {
+  display: inline-block;
+  padding-right: 3pt;
+}
+
+.notes .notice.equal:before {
+  content: "*";
+  font-size: 19pt;
+  font-weight: normal;
+  vertical-align: -2pt;
+  display: inline-block;
+  width: 1ex;
+}
+
+.notes .notice.equaladv:before {
+  content: "\2020";
+  font-size: 14pt;
+  font-weight: normal;
+  vertical-align: 6pt;
+  display: inline-block;
+  width: 1ex;
+}
+
+.button {
+  background-color: #363636;
+  border-color: #dbdbdb;
+  border-width: 1px;
+  color: #fff;
+  cursor: pointer;
+  justify-content: center;
+  padding-bottom: calc(0.5em - 1px);
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-top: calc(0.5em - 1px);
+  text-align: center;
+  white-space: nowrap;
+  font-size: 1rem;
+  border-radius: 290486px;
+  padding-left: calc(1em + 0.25em);
+  padding-right: calc(1em + 0.25em);
+  text-decoration: none;
+}
+
+.button:hover {
+  background-color: #4a4a4a;
+}
+
+.centered {
+  width: 100%;
+  margin: 20px 0;
+  align-items: center;
+}
+
+.centered > * {
+  margin: 0 auto;
+}
+
+.figure {
+  display: flex;
+  justify-content: center;
+  margin: 3ex auto;
+  margin-bottom: 4ex;
+}
+
+div.columns {
+  display: flex;
+  flex-direction: row;
+}
+
+div.columns > div {
+  margin-right: auto;
+  flex: 0 1 auto;
+}
+
+div.columns > .thin {
+  flex-basis: 30%;
+}
+
+div.columns > .medium {
+  flex-basis: 35%;
+}
+
+div.columns > .half {
+  flex-basis: 45%;
+}
+
+div.columns > .wide {
+  flex-basis: 60%;
+}
+
+div.columns > .full {
+  flex-basis: 90%;
+}
+
+.grow {
+  flex-grow: 1;
+}
+
+div.vertical {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+div.margin {
+  margin: 0 5%;
+  width: 90%;
+}
+
+section {
+  padding: 0 1em;
+}
+
+section + section {
+  margin: 2em 0;
+  border-top: 2px solid #eee;
+  padding-top: 1em 0;
+  padding-right: 1em;
+  padding-left: 1em;
+}
+
+div.theorem {
+  margin-top: 3ex;
+  margin-bottom: 4ex;
+  margin-left: 10%;
+  margin-right: 10%;
+  padding: 1ex 1em;
+  border: 2px solid #666;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  font-style: italic;
+  text-align: justify;
+}
+
+div.theorem span {
+  font-style: normal;
+  font-weight: bold;
+}
+
+div.theorem span + span {
+  font-style: normal;
+  font-weight: normal;
+}
+
+div.theorem span + span:before {
+  content: "(";
+}
+
+div.theorem span:not(:has(+ span)):after {
+  content: ". ";
+  font-style: normal;
+  font-weight: bold;
+}
+
+div.theorem span + span:after {
+  content: "). ";
+  font-style: normal;
+  font-weight: normal;
+}
+
+.caption {
+  width: 90%;
+  margin: auto;
+}
+
+.triple {
+  display: flex;
+  gap: 2em;
+}
+
+.triple * {
+  flex-basis: 0;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.triple p {
+  text-align: center;
+}
+
+pre[class*="language-"] {
+  font-size: 10pt;
+  background-color: #f0f0f0;
+}
+
+code[class*="language-"] ::selection,
+code[class*="language-"]::selection,
+pre[class*="language-"] ::selection,
+pre[class*="language-"]::selection {
+  background-color: #c2bfd0;
+}
+
+.bibtex code {
+  background: none;
+  white-space: pre-wrap;
+  border: none;
+}
+
+.abstract {
+  margin: 1em 2em;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  text-align: justify;
+}
+
+.abstract :is(h1, h2, h3, h4) {
+  margin-bottom: 0;
+  color: #1a1a1a;
+}
+
+.bxpad {
+  padding-left: 1em;
+}
+
+.axpad {
+  padding-right: 1em;
+}
+
+.xpad {
+  padding: 0 1em;
+}
+
+.bypad {
+  padding-top: 1em;
+}
+
+.aypad {
+  padding-bottom: 1em;
+}
+
+.ypad {
+  padding: 1em 0;
+}
+
+div.xspace > div + div {
+  margin-left: 1em;
+}
+
+div.yspace > div + div {
+  margin-top: 1em;
+}
