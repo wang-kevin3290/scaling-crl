@@ -8,8 +8,7 @@
 5. Install more dependencies: ```pip install tyro wandb==0.17.9 wandb_osh==1.2.2  brax==0.10.1 mediapy==1.2.2 scipy==1.12.0```
 
 ## Run training script
-To run the code, simply use the train script: ```python train.py```  
-To specify hyperparameters, see the example provided in the slurm script `job.slurm`.
+To run the code, you'll need a GPU. Please see the example provided in the slurm script `job.slurm`.
 
 ## Troubleshooting Potential Errors
 
