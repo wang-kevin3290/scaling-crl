@@ -306,6 +306,16 @@
 
     <section>
       <h2>The Building Blocks of RL Scaling (Our Approach)</h2>
+      
+      <div style="margin-bottom: 30px;">
+        <p>
+          In NLP and Computer Vision, scaling up model size has driven notable AI advancements in recent years. Yet, why hasn't RL seen comparable progress? In this work, we ask: can we leverage insights and lessons from language and vision to serve as building blocks for scaling RL?
+        </p>
+        <p>
+          At first glance, it makes sense why training very large RL networks should be difficult: the RL problem provides very few bits of feedback (e.g., only a sparse reward after a long sequence of observations), so the ratio of feedback to parameters is very small. The conventional wisdom (which many recent models reflect) has been that large AI systems must be trained primarily in a self-supervised fashion and that RL should only be used to finetune these models. Indeed, many of the recent breakthroughs in other fields have been primarily achieved with <i>self-supervised</i> methods.
+        </p>
+      </div>
+
       <div class="building-blocks-grid">
         <div class="block">
           <h3>1. Self-supervised learning</h3>
@@ -474,6 +484,12 @@
           });
         });
       </script>
+
+      <div style="margin-top: 30px;">
+        <p>
+          The primary contribution of this work is to show that integrating these "building block" scaling components into a single RL approach exhibits strong scalability. We anticipate that future research may build on this foundation by incorporating or uncovering additional "building block" elements.
+        </p>
+      </div>
     </section>
 
     <section>
