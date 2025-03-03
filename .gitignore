@@ -1,5 +1,4 @@
 /wandb
-
 .ipynb_checkpoints/
 /slurm_logs
 __pycache__/
