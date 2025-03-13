@@ -719,6 +719,60 @@
     </section>
 
     <section>
+      <h2>Open Questions and Future Directions</h2>
+      <div class="future-directions-container">
+        <ul class="future-directions">
+          <li>
+            <strong>Pushing depth scaling further:</strong> Can we continue to push the limits of depth scaling, beyond 1000+ layers, particularly in the critic network? What happens if we use Neural ODEs, which can be viewed as modeling a ResNet of continuous (effectively infinite) depth?
+          </li>
+          <li>
+            <strong>Single-goal setting:</strong> Does scaling CRL work in the "single goal" setting, with no subgoals in addition to no rewards/demonstrations in self-supervised RL? Although the tasks in this research utilize subgoals during training, a promising sign is one of the ten tasks, Arm Binpick Hard, is very close to single-goal (bins are small and far apart, no inherent subgoal structure). And we do see scaling on this task as well.
+          </li>
+          <li>
+            <strong>Distributed training:</strong> Testing the limits of CRL scaling via distributed training? Currently all experiments are run on a singular GPU. Given that we find scaling depth, width, and batch size all improve performance, what performance gains and emergent performance can we achieve when we scale all of these dimensions together?
+          </li>
+          <li>
+            <strong>Theoretical understanding:</strong> Can we gain a more rigorous theoretical understanding of why exactly does depth scaling in CRL work?
+          </li>
+          <li>
+            <strong>Offline RL:</strong> Can we get deep networks to help in the offline setting?
+          </li>
+          <li>
+            <strong>Transfer learning:</strong> Can we apply transfer learning to CRL, and if so, can scaling enable the learning of generalized policies that contribute toward developing foundational RL models?
+          </li>
+        </ul>
+      </div>
+
+      <style>
+        .future-directions-container {
+          background-color: #f5f5f5;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          padding: 25px 30px;
+          margin: 20px 0;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .future-directions {
+          margin: 0;
+          padding-left: 25px;
+          columns: 2;
+          column-gap: 40px;
+        }
+
+        .future-directions li {
+          margin-bottom: 15px;
+          break-inside: avoid;
+        }
+
+        .future-directions li:last-child {
+          margin-bottom: 0;
+        }
+      </style>
+    </section>
+
+    <section>
       <h2>
         ${\bf B\kern-.05em{\small I\kern-.025em B}\kern-.08em
         T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}$
