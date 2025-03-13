@@ -177,13 +177,13 @@
             <div class="video-pair">
               <div class="video-container">
                 <video autoplay loop muted playsinline>
-                  <source src="static/videos/arm_push_hard_4.mp4" type="video/mp4">
+                  <source src="static/videos/arm_push_hard4.mp4" type="video/mp4">
                 </video>
                 <p>Original</p>
               </div>
               <div class="video-container">
                 <video autoplay loop muted playsinline>
-                  <source src="static/videos/arm_push_hard_64.mp4" type="video/mp4">
+                  <source src="static/videos/arm_push_hard64.mp4" type="video/mp4">
                 </video>
                 <p>Ours</p>
               </div>
@@ -195,13 +195,13 @@
             <div class="video-pair">
               <div class="video-container">
                 <video autoplay loop muted playsinline>
-                  <source src="static/videos/arm_binpick_hard_4.mp4" type="video/mp4">
+                  <source src="static/videos/arm_binpick_hard4.mp4" type="video/mp4">
                 </video>
                 <p>Original</p>
               </div>
               <div class="video-container">
                 <video autoplay loop muted playsinline>
-                  <source src="static/videos/arm_binpick_hard_64.mp4" type="video/mp4">
+                  <source src="static/videos/arm_binpick_hard64.mp4" type="video/mp4">
                 </video>
                 <p>Ours</p>
               </div>
@@ -241,7 +241,7 @@
           }
 
           .video-group h4 {
-            margin: -10px 0;
+            margin: -10px 0 10px 0;
             color: #27579a;
           }
 
@@ -258,20 +258,62 @@
 
           .video-container {
             flex: 1;
+            position: relative;
           }
 
           .video-container video {
             width: 100%;
             border-radius: 4px;
+            margin: 0;
             margin-bottom: 2px;
+          }
+
+          .video-wrapper {
+            position: relative;
+            width: 100%;
+          }
+
+          .video-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 2px;
+            background-color: #2ecc71;
+            opacity: 0;
+            pointer-events: none;
+            border-radius: 4px;
+            transition: opacity 0.2s ease;
+          }
+
+          .video-wrapper.highlight::after {
+            opacity: 0.2;
           }
 
           .video-container p {
             margin: 2px 0;
             font-size: 0.9em;
             color: #666;
+            position: relative;
+            z-index: 1;
+          }
+
+          .asterisk-note {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+            font-style: italic;
+            margin-top: 20px;
           }
         </style>
+
+        <!-- Add the asterisk note after the video grid -->
+        <div class="asterisk-note">
+          *Ours scales network depth to 64 layers. We show the results of scaling depth further in <a
+            href="#scaling-limits">Exploring the limits of scaling</a>.
+        </div>
       </div>
     </section>
 
@@ -306,13 +348,20 @@
 
     <section>
       <h2>The Building Blocks of RL Scaling (Our Approach)</h2>
-      
+
       <div style="margin-bottom: 30px;">
         <p>
-          In NLP and Computer Vision, scaling up model size has driven notable AI advancements in recent years. Yet, why hasn't RL seen comparable progress? In this work, we ask: can we leverage insights and lessons from language and vision to serve as building blocks for scaling RL?
+          In NLP and Computer Vision, scaling up model size has driven notable AI advancements in recent years. Yet, why
+          hasn't RL seen comparable progress? In this work, we ask: can we leverage insights and lessons from language
+          and vision to serve as building blocks for scaling RL?
         </p>
         <p>
-          At first glance, it makes sense why training very large RL networks should be difficult: the RL problem provides very few bits of feedback (e.g., only a sparse reward after a long sequence of observations), so the ratio of feedback to parameters is very small. The conventional wisdom (which many recent models reflect) has been that large AI systems must be trained primarily in a self-supervised fashion and that RL should only be used to finetune these models. Indeed, many of the recent breakthroughs in other fields have been primarily achieved with <i>self-supervised</i> methods.
+          At first glance, it makes sense why training very large RL networks should be difficult: the RL problem
+          provides very few bits of feedback (e.g., only a sparse reward after a long sequence of observations), so the
+          ratio of feedback to parameters is very small. The conventional wisdom (which many recent models reflect) has
+          been that large AI systems must be trained primarily in a self-supervised fashion and that RL should only be
+          used to finetune these models. Indeed, many of the recent breakthroughs in other fields have been primarily
+          achieved with <i>self-supervised</i> methods.
         </p>
       </div>
 
@@ -635,22 +684,23 @@
 
       <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
 
-      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px">How Far Can We Scale Depth?</h3>
+      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="scaling-limits">How Far Can We Scale Depth?
+      </h3>
       <div class="yspace centered">
-        <div class="full-width margin" 
-             style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; gap: 20px;">
+        <div class="full-width margin"
+          style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; gap: 20px;">
           <div style="width: 45%; margin: 0; text-align: center;">
             <img src="static/figures/depth_scaling_limits_2.png" width="100%" />
           </div>
           <p class="caption" style="width: 40%; margin: 0;">
             <b>Exploring the limits of scaling.</b><br />
-            We push the boundaries of network depth scaling up to 1024 layers. In Humanoid Big Maze, 
-            performance plateaus. However, on Humanoid U-Maze, we observe continued performance 
-            improvements with network depths of 256 and 1024 layers. This may be because the maneuver 
-            being learned (flipping over the wall) is exceptionally complex (see 
-            <a href="#qualitative-evaluation">Figure above</a>), and requires greater network depth 
-            to learn. Note that for the 1024-layer training runs, we observed the actor loss exploding at the 
-            onset of training, so we maintained the actor depth at 512 while using 1024-layer networks 
+            We push the boundaries of network depth scaling up to 1024 layers. In Humanoid Big Maze,
+            performance plateaus. However, on Humanoid U-Maze, we observe continued performance
+            improvements with network depths of 256 and 1024 layers. This may be because the maneuver
+            being learned (flipping over the wall) is exceptionally complex (see
+            <a href="#qualitative-evaluation">Figure above</a>), and requires greater network depth
+            to learn. Note that for the 1024-layer training runs, we observed the actor loss exploding at the
+            onset of training, so we maintained the actor depth at 512 while using 1024-layer networks
             only for the two critic encoders.
           </p>
         </div>
@@ -694,22 +744,29 @@
           background-color: #f5f5f5;
           border: 1px solid #ddd;
           border-radius: 8px;
-          padding: 25px 30px;  /* Increased padding */
+          padding: 25px 30px;
+          /* Increased padding */
           margin: 20px 0;
-          width: 100%;        /* Changed from 70% to 100% */
+          width: 100%;
+          /* Changed from 70% to 100% */
           box-sizing: border-box;
         }
 
         .key-findings {
           margin: 0;
-          padding-left: 25px;  /* Slightly increased padding */
-          columns: 2;         /* Split into 2 columns */
-          column-gap: 40px;   /* Space between columns */
+          padding-left: 25px;
+          /* Slightly increased padding */
+          columns: 2;
+          /* Split into 2 columns */
+          column-gap: 40px;
+          /* Space between columns */
         }
 
         .key-findings li {
-          margin-bottom: 15px;  /* Increased spacing between items */
-          break-inside: avoid;  /* Prevent items from splitting across columns */
+          margin-bottom: 15px;
+          /* Increased spacing between items */
+          break-inside: avoid;
+          /* Prevent items from splitting across columns */
         }
 
         .key-findings li:last-child {
@@ -737,6 +794,111 @@
 }</code></pre>
     </section>
   </main>
+
+  <script>
+    // Add speed map (all videos at normal 1x speed now)
+    const videoSpeeds = {
+      'arm_push_hard4.mp4': 1,
+      'arm_push_hard64.mp4': 1,
+      'humanoid4.mp4': 1,
+      'humanoid64.mp4': 1,
+      'ant_u4_maze4.mp4': 1,
+      'ant_u4_maze64.mp4': 1,
+      'ant_big_maze_4.mp4': 1,
+      'ant_big_maze_64.mp4': 1,
+      'arm_binpick_hard4.mp4': 1,
+      'arm_binpick_hard64.mp4': 1,
+      'humanoid_big_maze4.mp4': 1,
+      'humanoid_big_maze64.mp4': 1
+    };
+
+    // Highlight every 4 seconds for videos ending in 64
+    const videoHighlights = {
+      'arm_push_hard4.mp4': [],
+      'arm_push_hard64.mp4': [0, 4, 8, 12, 16, 20],
+      'humanoid4.mp4': [],
+      'humanoid64.mp4': [0, 4, 8, 12, 16, 20],
+      'ant_u4_maze4.mp4': [],
+      'ant_u4_maze64.mp4': [0, 4, 8, 12, 16, 20],
+      'ant_big_maze_4.mp4': [],
+      'ant_big_maze_64.mp4': [0, 4, 8, 12, 16, 20],
+      'arm_binpick_hard4.mp4': [],
+      'arm_binpick_hard64.mp4': [0, 4, 8, 12, 16, 20],
+      'humanoid_big_maze4.mp4': [],
+      'humanoid_big_maze64.mp4': [0, 4, 8, 12, 16, 20]
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const videos = document.querySelectorAll('video');
+      const wrappers = [];
+
+      // First, wrap all videos in wrappers
+      videos.forEach(video => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'video-wrapper';
+        video.parentNode.insertBefore(wrapper, video);
+        wrapper.appendChild(video);
+        wrappers.push(wrapper);
+
+        const sourceElement = video.querySelector('source');
+        const filename = sourceElement.src.split('/').pop();
+
+        // Set playback speed if specified
+        const speed = videoSpeeds[filename];
+        if (speed) {
+          video.playbackRate = 1 / speed;
+        }
+      });
+
+      let lastHighlightState = false;
+
+      // Add this outside the updateHighlights function, when setting up the animation
+      const startTime = Date.now();
+
+      function updateHighlights() {
+        const pauseDuration = 1500; // 1.5 seconds pause
+        const now = Date.now();
+        const timeElapsed = now - startTime;
+        const adjustedTime = (timeElapsed + 4000) % 5500;
+        // const shouldHighlight = (timeElapsed + cycleTime) % cycleTime < highlightDuration;
+        const shouldHighlight = (timeElapsed + 5500 - 4000) % 5500 < pauseDuration;
+
+        // If we're transitioning from not highlighted to highlighted
+        if (!lastHighlightState && shouldHighlight) {
+          // console.log('Flash triggered at:', now % 100000);
+          // console.log('Adjusted time:', adjustedTime);
+          videos.forEach(video => {
+            video.pause();
+            // console.log('Videos paused at:', Date.now() % 100000);
+            setTimeout(() => {
+              video.play();
+              // console.log('Videos resumed at:', Date.now() % 100000);
+            }, pauseDuration);
+          });
+        }
+
+        // Apply highlight state to all "64" videos
+        wrappers.forEach(wrapper => {
+          const video = wrapper.querySelector('video');
+          const sourceElement = video.querySelector('source');
+          const filename = sourceElement.src.split('/').pop();
+
+          if (filename.includes('64')) {
+            wrapper.classList.toggle('highlight', shouldHighlight);
+          }
+        });
+
+        lastHighlightState = shouldHighlight;
+        // startTime = now;
+        requestAnimationFrame(updateHighlights);
+      }
+
+      // Start the highlight animation
+      updateHighlights();
+    });
+
+
+  </script>
 </body>
 
 </html>
