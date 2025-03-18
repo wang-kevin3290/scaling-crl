@@ -9,7 +9,10 @@
 5. Install more dependencies: ```pip install tyro wandb==0.17.9 wandb_osh==1.2.2  brax==0.10.1 mediapy==1.2.2 scipy==1.12.0```
 
 ## Run training script
-To run the code, you'll need a GPU. Please see the example provided in the slurm script `job.slurm`.
+To run the code, you'll need a GPU. For Humanoid-based environments, it may require up to 80GB of GPU memory. Below is an example command to run the training script (an additional example can be found in the provided slurm script `job.slurm`): 
+```
+python train.py --env_id "humanoid" --eval_env_id "humanoid" --num_epochs 100 --total_env_steps 100000000 --critic_depth 16 --actor_depth 16 --actor_skip_connections 4 --critic_skip_connections 4 --batch_size 512 --vis_length 1000 --save_buffer 0 
+```
 
 ## Troubleshooting Potential Errors
 
