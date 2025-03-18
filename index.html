@@ -75,7 +75,7 @@
         <a>Kevin Wang</a></span>
       <span class="affil">1</span>
       <span class="author">
-        <a>Ishaan Javali</a></span>
+        <a href="https://ishaanjavali.me">Ishaan Javali</a></span>
       <span class="affil">1</span>
       <span class="author">
         <a>Michał Bortkiewicz</a></span>
@@ -780,22 +780,33 @@
       <div class="future-directions-container">
         <ul class="future-directions">
           <li>
-            <strong>Pushing depth scaling further:</strong> Can we continue to push the limits of depth scaling, beyond 1000+ layers, particularly in the critic network? What happens if we use Neural ODEs, which can be viewed as modeling a ResNet of continuous (effectively infinite) depth?
+            <strong>Pushing depth scaling further:</strong> Can we continue to push the limits of depth scaling, beyond
+            1000+ layers, particularly in the critic network? What happens if we use Neural ODEs, which can be viewed as
+            modeling a ResNet of continuous (effectively infinite) depth?
           </li>
           <li>
-            <strong>Single-goal setting:</strong> Does scaling CRL work in the "single goal" setting, with no subgoals in addition to no rewards/demonstrations in self-supervised RL? Although the tasks in this research utilize subgoals during training, a promising sign is one of the ten tasks, Arm Binpick Hard, is very close to single-goal (bins are small and far apart, no inherent subgoal structure). And we do see scaling on this task as well.
+            <strong>Single-goal setting:</strong> Does scaling CRL work in the "single goal" setting, with no subgoals
+            in addition to no rewards/demonstrations in self-supervised RL? Although the tasks in this research utilize
+            subgoals during training, a promising sign is one of the ten tasks, Arm Binpick Hard, is very close to
+            single-goal (bins are small and far apart, no inherent subgoal structure). And we do see scaling on this
+            task as well.
           </li>
           <li>
-            <strong>Distributed training:</strong> Testing the limits of CRL scaling via distributed training? Currently all experiments are run on a singular GPU. Given that we find scaling depth, width, and batch size all improve performance, what performance gains and emergent performance can we achieve when we scale all of these dimensions together?
+            <strong>Distributed training:</strong> Testing the limits of CRL scaling via distributed training? Currently
+            all experiments are run on a singular GPU. Given that we find scaling depth, width, and batch size all
+            improve performance, what performance gains and emergent performance can we achieve when we scale all of
+            these dimensions together?
           </li>
           <li>
-            <strong>Theoretical understanding:</strong> Can we gain a more rigorous theoretical understanding of why exactly does depth scaling in CRL work?
+            <strong>Theoretical understanding:</strong> Can we gain a more rigorous theoretical understanding of why
+            exactly does depth scaling in CRL work?
           </li>
           <li>
             <strong>Offline RL:</strong> Can we get deep networks to help in the offline setting?
           </li>
           <li>
-            <strong>Transfer learning:</strong> Can we apply transfer learning to CRL, and if so, can scaling enable the learning of generalized policies that contribute toward developing foundational RL models?
+            <strong>Transfer learning:</strong> Can we apply transfer learning to CRL, and if so, can scaling enable the
+            learning of generalized policies that contribute toward developing foundational RL models?
           </li>
         </ul>
       </div>
@@ -866,34 +877,11 @@
       'humanoid_big_maze64.mp4': 1
     };
 
-    // Highlight every 4 seconds for videos ending in 64
-    const videoHighlights = {
-      'arm_push_hard4.mp4': [],
-      'arm_push_hard64.mp4': [0, 4, 8, 12, 16, 20],
-      'humanoid4.mp4': [],
-      'humanoid64.mp4': [0, 4, 8, 12, 16, 20],
-      'ant_u4_maze4.mp4': [],
-      'ant_u4_maze64.mp4': [0, 4, 8, 12, 16, 20],
-      'ant_big_maze_4.mp4': [],
-      'ant_big_maze_64.mp4': [0, 4, 8, 12, 16, 20],
-      'arm_binpick_hard4.mp4': [],
-      'arm_binpick_hard64.mp4': [0, 4, 8, 12, 16, 20],
-      'humanoid_big_maze4.mp4': [],
-      'humanoid_big_maze64.mp4': [0, 4, 8, 12, 16, 20]
-    };
-
     document.addEventListener('DOMContentLoaded', () => {
       const videos = document.querySelectorAll('video');
-      const wrappers = [];
 
-      // First, wrap all videos in wrappers
+      // Set video speeds if needed (all at normal 1x speed now)
       videos.forEach(video => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'video-wrapper';
-        video.parentNode.insertBefore(wrapper, video);
-        wrapper.appendChild(video);
-        wrappers.push(wrapper);
-
         const sourceElement = video.querySelector('source');
         const filename = sourceElement.src.split('/').pop();
 
@@ -903,55 +891,7 @@
           video.playbackRate = 1 / speed;
         }
       });
-
-      let lastHighlightState = false;
-
-      // Add this outside the updateHighlights function, when setting up the animation
-      const startTime = Date.now();
-
-      function updateHighlights() {
-        const pauseDuration = 1500; // 1.5 seconds pause
-        const now = Date.now();
-        const timeElapsed = now - startTime;
-        const adjustedTime = (timeElapsed + 4000) % 5500;
-        // const shouldHighlight = (timeElapsed + cycleTime) % cycleTime < highlightDuration;
-        const shouldHighlight = (timeElapsed + 5500 - 4000) % 5500 < pauseDuration;
-
-        // If we're transitioning from not highlighted to highlighted
-        if (!lastHighlightState && shouldHighlight) {
-          // console.log('Flash triggered at:', now % 100000);
-          // console.log('Adjusted time:', adjustedTime);
-          videos.forEach(video => {
-            video.pause();
-            // console.log('Videos paused at:', Date.now() % 100000);
-            setTimeout(() => {
-              video.play();
-              // console.log('Videos resumed at:', Date.now() % 100000);
-            }, pauseDuration);
-          });
-        }
-
-        // Apply highlight state to all "64" videos
-        wrappers.forEach(wrapper => {
-          const video = wrapper.querySelector('video');
-          const sourceElement = video.querySelector('source');
-          const filename = sourceElement.src.split('/').pop();
-
-          if (filename.includes('64')) {
-            wrapper.classList.toggle('highlight', shouldHighlight);
-          }
-        });
-
-        lastHighlightState = shouldHighlight;
-        // startTime = now;
-        requestAnimationFrame(updateHighlights);
-      }
-
-      // Start the highlight animation
-      updateHighlights();
     });
-
-
   </script>
 </body>
 
