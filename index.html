@@ -125,7 +125,7 @@
           <button class="toggle-btn active" data-view="gallery">
             <div class="btn-content">
               <i class="fas fa-th" style="color: black;"></i>
-              <span style="font-size: 1em;">View all Videos</span>
+              <span style="font-size: 1em;">Grid View</span>
             </div>
           </button>
           <button class="toggle-btn" data-view="grid">
@@ -154,7 +154,7 @@
                   <video autoplay loop muted playsinline>
                     <source src="static/videos/humanoid64.mp4" type="video/mp4">
                   </video>
-                  <p>Very deep nets (64 layers)</p>
+                  <p>Deep nets (64 layers)</p>
                 </div>
               </div>
             </div>
@@ -389,9 +389,10 @@
                     <video autoplay loop muted playsinline>
                       <source src="static/videos/humanoid64.mp4" type="video/mp4">
                     </video>
-                    <p>Very deep nets<br />(64 layers)</p>
+                    <p>Deep nets<br />(64 layers)</p>
                   </div>
                 </div>
+
               </div>
 
               <div class="video-group">
@@ -407,7 +408,7 @@
                     <video autoplay loop muted playsinline>
                       <source src="static/videos/ant_u4_maze64.mp4" type="video/mp4">
                     </video>
-                    <p>Very deep nets<br />(64 layers)</p>
+                    <p>Deep nets<br />(64 layers)</p>
                   </div>
                 </div>
               </div>
@@ -425,7 +426,7 @@
                     <video autoplay loop muted playsinline>
                       <source src="static/videos/ant_big_maze_64.mp4" type="video/mp4">
                     </video>
-                    <p>Very deep nets<br />(64 layers)</p>
+                    <p>Deep nets<br />(64 layers)</p>
                   </div>
                 </div>
               </div>
@@ -444,7 +445,7 @@
                     <video autoplay loop muted playsinline>
                       <source src="static/videos/arm_push_hard64.mp4" type="video/mp4">
                     </video>
-                    <p>Very deep nets<br />(64 layers)</p>
+                    <p>Deep nets<br />(64 layers)</p>
                   </div>
                 </div>
               </div>
@@ -462,7 +463,7 @@
                     <video autoplay loop muted playsinline>
                       <source src="static/videos/arm_binpick_hard64.mp4" type="video/mp4">
                     </video>
-                    <p>Very deep nets<br />(64 layers)</p>
+                    <p>Deep nets<br />(64 layers)</p>
                   </div>
                 </div>
               </div>
@@ -480,12 +481,16 @@
                     <video autoplay loop muted playsinline>
                       <source src="static/videos/humanoid_big_maze64.mp4" type="video/mp4">
                     </video>
-                    <p>Very deep nets<br />(64 layers)</p>
+                    <p>Deep nets<br />(64 layers)</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <p class="scaling-note">
+            <i>*Here we scale to depth 64. We test the limits of scaling up to 1000
+              layers in the <a href="#scaling-limits">scaling limits section</a> below.</i>
+          </p>
         </div>
 
         <style>
@@ -495,7 +500,7 @@
 
           .view-toggle {
             position: absolute;
-            left: -140px;
+            left: -180px;
             top: 120px;
             display: flex;
             flex-direction: column;
@@ -508,7 +513,7 @@
             height: 110px;
             border-radius: 20px;
             border: 2px solid #27579a;
-            background: #27579a;
+            background: white;
             cursor: pointer;
             padding: 12px;
             transition: all 0.3s ease;
@@ -525,37 +530,34 @@
 
           .toggle-btn i,
           .toggle-btn span {
-            color: white;
-            /* Default state - white text/icon on dark background */
+            color: #27579a;
           }
 
           .toggle-btn.active {
-            background: white;
+            background: #27579a;
           }
 
           .toggle-btn.active i,
           .toggle-btn.active span {
-            color: #27579a;
+            color: white;
           }
 
           .toggle-btn:hover {
-            background: #1f4277;
+            background: #f0f0f0;
           }
 
           .toggle-btn:hover i,
           .toggle-btn:hover span {
-            color: white;
-            /* Ensure text stays white on hover for dark background */
+            color: #27579a;
           }
 
           .toggle-btn.active:hover {
-            background: #f0f0f0;
+            background: #1f4277;
           }
 
           .toggle-btn.active:hover i,
           .toggle-btn.active:hover span {
-            color: #27579a;
-            /* Keep text blue on hover for active/white background */
+            color: white;
           }
 
           .hidden-view {
@@ -647,9 +649,25 @@
             margin-top: 20px;
           }
 
+          .scaling-note {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+          }
+
+          .scaling-note a {
+            color: #27579a;
+            text-decoration: none;
+          }
+
+          .scaling-note a:hover {
+            text-decoration: underline;
+          }
+
           @media (max-width: 1400px) {
             .view-toggle {
-              left: -120px;
+              left: -160px;
             }
           }
         </style>
@@ -917,7 +935,7 @@
         <div class="full-width margin"
           style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center;">
           <div style="width: 90%; margin: 0; text-align: center;">
-            <img src="static/figures/main_results.png" width="100%" />
+            <img src="static/figures/main_results.gif" width="100%" />
           </div>
         </div>
         <p class="caption" style="width: 90%; margin: 20px auto; margin-top: 0px;">
