@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs-bibtex@2.1.0/prism-bibtex.min.js"></script>
   <link rel="stylesheet" href="static/css/index.css" />
 
-
+  <title>1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities</title>
 
   <script type="text/javascript" id="MathJax-script" async
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-svg.js"></script>
@@ -69,19 +69,19 @@
     }
   </script>
   <header>
-    <h1>1000 Layer Networks for Self-Supervised RL:<br>Scaling Depth Can Enable New Goal-Reaching Capabilities</h1>
+    <h1>1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities</h1>
     <div class="authors">
       <span class="author">
-        <a href="mailto:kw6487@princeton.edu">Kevin Wang</a></span>
+        <a>Kevin Wang</a></span>
       <span class="affil">1</span>
       <span class="author">
         <a href="https://ishaanjavali.me">Ishaan Javali</a></span>
       <span class="affil">1</span>
       <span class="author">
-        <a href="mailto:michalbortkiewicz8@gmail.com">Michał Bortkiewicz</a></span>
+        <a>Michał Bortkiewicz</a></span>
       <span class="affil">2</span>
       <span class="author">
-        <a href="https://cvlab.ii.pw.edu.pl/ttrzcins/">Tomasz Trzcinski</a></span>
+        <a>Tomasz Trzcinski</a></span>
       <span class="affil">2</span>
       <span class="author">
         <a href="https://ben-eysenbach.github.io">Benjamin Eysenbach</a></span>
@@ -110,173 +110,504 @@
         </a>
       </span>
     </div>
-    <p style="text-align: center; margin-top: 15px; color: #666;">
-      Please email <a href="mailto:kw6487@princeton.edu" style="color: #27579a; text-decoration: none;">kw6487@princeton.edu</a> if you have any questions, comments, or suggestions!
-    </p>
   </header>
 
   <main>
     <section>
       <div class="summary">
-        <div class="video-grid">
-          <!-- First Row -->
-          <div class="video-group">
-            <h4>Humanoid</h4>
-            <div class="video-pair">
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/humanoid4.mp4" type="video/mp4">
-                </video>
-                <p>Original</p>
-              </div>
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/humanoid64.mp4" type="video/mp4">
-                </video>
-                <p>Ours</p>
+        <!-- Add this right before the featured video section -->
+        <div class="view-toggle">
+          <button class="toggle-btn active" data-view="gallery">
+            <div class="btn-content">
+              <i class="fas fa-th" style="color: black;"></i>
+              <span style="font-size: 1em;">View all Videos</span>
+            </div>
+          </button>
+          <button class="toggle-btn" data-view="grid">
+            <div class="btn-content">
+              <i class="fas fa-images" style="color: black;"></i>
+              <span style="font-size: 1em;">Click Here to See in More Detail</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Add both views, one hidden initially -->
+        <div class="view-container">
+          <!-- Gallery View -->
+          <div id="gallery-view" class="hidden-view">
+            <!-- Featured video pair container -->
+            <div id="featured-video-pair" class="featured-video-group">
+              <h4 id="featured-title">Humanoid</h4>
+              <div class="video-pair">
+                <div class="video-container">
+                  <video autoplay loop muted playsinline>
+                    <source src="static/videos/humanoid4.mp4" type="video/mp4">
+                  </video>
+                  <p>Conventional nets (4 layers)</p>
+                </div>
+                <div class="video-container">
+                  <video autoplay loop muted playsinline>
+                    <source src="static/videos/humanoid64.mp4" type="video/mp4">
+                  </video>
+                  <p>Very deep nets (64 layers)</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="video-group">
-            <h4>Ant U4-Maze</h4>
-            <div class="video-pair">
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/ant_u4_maze4.mp4" type="video/mp4">
-                </video>
-                <p>Original</p>
+            <!-- Thumbnail gallery -->
+            <div class="video-thumbnails">
+              <div class="thumbnail-pair active" data-title="Humanoid" data-video1="humanoid4.mp4"
+                data-video2="humanoid64.mp4">
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/humanoid4.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/humanoid64.mp4" type="video/mp4">
+                  </video>
+                </div>
               </div>
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/ant_u4_maze64.mp4" type="video/mp4">
-                </video>
-                <p>Ours</p>
+
+              <div class="thumbnail-pair" data-title="Ant U4-Maze" data-video1="ant_u4_maze4.mp4"
+                data-video2="ant_u4_maze64.mp4">
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/ant_u4_maze4.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/ant_u4_maze64.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+
+              <div class="thumbnail-pair" data-title="Ant Big Maze" data-video1="ant_big_maze_4.mp4"
+                data-video2="ant_big_maze_64.mp4">
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/ant_big_maze_4.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/ant_big_maze_64.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+
+              <div class="thumbnail-pair" data-title="Arm Push Hard" data-video1="arm_push_hard4.mp4"
+                data-video2="arm_push_hard64.mp4">
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/arm_push_hard4.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/arm_push_hard64.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+
+              <div class="thumbnail-pair" data-title="Arm Binpick Hard" data-video1="arm_binpick_hard4.mp4"
+                data-video2="arm_binpick_hard64.mp4">
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/arm_binpick_hard4.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/arm_binpick_hard64.mp4" type="video/mp4">
+                  </video>
+                </div>
+              </div>
+
+              <div class="thumbnail-pair" data-title="Humanoid Big Maze" data-video1="humanoid_big_maze4.mp4"
+                data-video2="humanoid_big_maze64.mp4">
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/humanoid_big_maze4.mp4" type="video/mp4">
+                  </video>
+                </div>
+                <div class="thumb-container">
+                  <video loop muted playsinline>
+                    <source src="static/videos/humanoid_big_maze64.mp4" type="video/mp4">
+                  </video>
+                </div>
               </div>
             </div>
+
+            <style>
+              .featured-video-group {
+                width: 90%;
+                margin: 0 auto 0px;
+              }
+
+              .featured-video-group h4 {
+                text-align: center;
+                color: #27579a;
+                margin: 0 0 5px 0;
+                font-size: 1.05em;
+              }
+
+              .video-pair {
+                display: flex;
+                gap: 20px;
+                justify-content: center;
+              }
+
+              .video-container {
+                flex: 1;
+                max-width: 45%;
+              }
+
+              .video-container video {
+                width: 100%;
+                border-radius: 4px;
+                margin-bottom: 5px;
+              }
+
+              .video-container p {
+                text-align: center;
+                margin: 5px 0;
+                color: #666;
+              }
+
+              .video-thumbnails {
+                display: flex;
+                gap: 8px;
+                overflow-x: auto;
+                padding: 10px;
+                width: 90%;
+                margin: 15px auto 0;
+                padding-bottom: 20px;
+              }
+
+              .thumbnail-pair {
+                display: flex;
+                gap: 3px;
+                cursor: pointer;
+                opacity: 0.7;
+                transition: opacity 0.3s;
+                flex: 0 0 auto;
+                position: relative;
+                padding: 2px;
+                margin-top: 0px;
+              }
+
+              .thumbnail-pair::after {
+                content: attr(data-title);
+                position: absolute;
+                bottom: 0px;
+                left: 0;
+                right: 0;
+                text-align: center;
+                font-size: 0.8em;
+                color: #666;
+              }
+
+              .thumbnail-pair:hover {
+                opacity: 1;
+              }
+
+              .thumbnail-pair.active {
+                opacity: 1;
+                outline: 2px solid #27579a;
+                outline-offset: -2px;
+              }
+
+              .thumb-container {
+                width: 80px;
+              }
+
+              .thumb-container video {
+                width: 100%;
+                border-radius: 4px;
+              }
+            </style>
+
+            <script>
+              document.addEventListener('DOMContentLoaded', () => {
+                const thumbnailPairs = document.querySelectorAll('.thumbnail-pair');
+                const featuredVideos = document.querySelectorAll('#featured-video-pair video source');
+                const featuredTitle = document.getElementById('featured-title');
+
+                thumbnailPairs.forEach(pair => {
+                  pair.addEventListener('click', () => {
+                    // Remove active class from all pairs
+                    thumbnailPairs.forEach(p => p.classList.remove('active'));
+                    // Add active class to clicked pair
+                    pair.classList.add('active');
+
+                    // Update featured videos
+                    featuredVideos[0].src = `static/videos/${pair.dataset.video1}`;
+                    featuredVideos[1].src = `static/videos/${pair.dataset.video2}`;
+
+                    // Update title
+                    featuredTitle.textContent = pair.dataset.title;
+
+                    // Reload videos to show new sources
+                    featuredVideos.forEach(source => source.parentElement.load());
+                  });
+
+                  // Start playing thumbnail videos on hover
+                  pair.addEventListener('mouseenter', () => {
+                    pair.querySelectorAll('video').forEach(video => video.play());
+                  });
+
+                  pair.addEventListener('mouseleave', () => {
+                    pair.querySelectorAll('video').forEach(video => video.pause());
+                  });
+                });
+              });
+            </script>
           </div>
 
-          <div class="video-group">
-            <h4>Ant Big Maze</h4>
-            <div class="video-pair">
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/ant_big_maze_4.mp4" type="video/mp4">
-                </video>
-                <p>Original</p>
+          <!-- Grid View -->
+          <div id="grid-view" class="active-view">
+            <div class="video-grid">
+              <!-- First Row -->
+              <div class="video-group">
+                <h4>Humanoid</h4>
+                <div class="video-pair">
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/humanoid4.mp4" type="video/mp4">
+                    </video>
+                    <p>Conventional nets<br />(4 layers)</p>
+                  </div>
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/humanoid64.mp4" type="video/mp4">
+                    </video>
+                    <p>Very deep nets<br />(64 layers)</p>
+                  </div>
+                </div>
               </div>
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/ant_big_maze_64.mp4" type="video/mp4">
-                </video>
-                <p>Ours</p>
-              </div>
-            </div>
-          </div>
 
-          <!-- Second Row -->
-          <div class="video-group">
-            <h4>Arm Push Hard</h4>
-            <div class="video-pair">
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/arm_push_hard4.mp4" type="video/mp4">
-                </video>
-                <p>Original</p>
+              <div class="video-group">
+                <h4>Ant U4-Maze</h4>
+                <div class="video-pair">
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/ant_u4_maze4.mp4" type="video/mp4">
+                    </video>
+                    <p>Conventional nets<br />(4 layers)</p>
+                  </div>
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/ant_u4_maze64.mp4" type="video/mp4">
+                    </video>
+                    <p>Very deep nets<br />(64 layers)</p>
+                  </div>
+                </div>
               </div>
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/arm_push_hard64.mp4" type="video/mp4">
-                </video>
-                <p>Ours</p>
-              </div>
-            </div>
-          </div>
 
-          <div class="video-group">
-            <h4>Arm Binpick Hard</h4>
-            <div class="video-pair">
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/arm_binpick_hard4.mp4" type="video/mp4">
-                </video>
-                <p>Original</p>
+              <div class="video-group">
+                <h4>Ant Big Maze</h4>
+                <div class="video-pair">
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/ant_big_maze_4.mp4" type="video/mp4">
+                    </video>
+                    <p>Conventional nets<br />(4 layers)</p>
+                  </div>
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/ant_big_maze_64.mp4" type="video/mp4">
+                    </video>
+                    <p>Very deep nets<br />(64 layers)</p>
+                  </div>
+                </div>
               </div>
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/arm_binpick_hard64.mp4" type="video/mp4">
-                </video>
-                <p>Ours</p>
-              </div>
-            </div>
-          </div>
 
-          <div class="video-group">
-            <h4>Humanoid Big Maze</h4>
-            <div class="video-pair">
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/humanoid_big_maze4.mp4" type="video/mp4">
-                </video>
-                <p>Original</p>
+              <!-- Second Row -->
+              <div class="video-group">
+                <h4>Arm Push Hard</h4>
+                <div class="video-pair">
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/arm_push_hard4.mp4" type="video/mp4">
+                    </video>
+                    <p>Conventional nets<br />(4 layers)</p>
+                  </div>
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/arm_push_hard64.mp4" type="video/mp4">
+                    </video>
+                    <p>Very deep nets<br />(64 layers)</p>
+                  </div>
+                </div>
               </div>
-              <div class="video-container">
-                <video autoplay loop muted playsinline>
-                  <source src="static/videos/humanoid_big_maze64.mp4" type="video/mp4">
-                </video>
-                <p>Ours</p>
+
+              <div class="video-group">
+                <h4>Arm Binpick Hard</h4>
+                <div class="video-pair">
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/arm_binpick_hard4.mp4" type="video/mp4">
+                    </video>
+                    <p>Conventional nets<br />(4 layers)</p>
+                  </div>
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/arm_binpick_hard64.mp4" type="video/mp4">
+                    </video>
+                    <p>Very deep nets<br />(64 layers)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="video-group">
+                <h4>Humanoid Big Maze</h4>
+                <div class="video-pair">
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/humanoid_big_maze4.mp4" type="video/mp4">
+                    </video>
+                    <p>Conventional nets<br />(4 layers)</p>
+                  </div>
+                  <div class="video-container">
+                    <video autoplay loop muted playsinline>
+                      <source src="static/videos/humanoid_big_maze64.mp4" type="video/mp4">
+                    </video>
+                    <p>Very deep nets<br />(64 layers)</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <style>
+          .summary {
+            position: relative;
+          }
+
+          .view-toggle {
+            position: absolute;
+            left: -140px;
+            top: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+          }
+
+          .toggle-btn {
+            width: 110px;
+            height: 110px;
+            border-radius: 20px;
+            border: 2px solid #27579a;
+            background: #27579a;
+            cursor: pointer;
+            padding: 12px;
+            transition: all 0.3s ease;
+          }
+
+          .btn-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+          }
+
+          .toggle-btn i,
+          .toggle-btn span {
+            color: white;
+            /* Default state - white text/icon on dark background */
+          }
+
+          .toggle-btn.active {
+            background: white;
+          }
+
+          .toggle-btn.active i,
+          .toggle-btn.active span {
+            color: #27579a;
+          }
+
+          .toggle-btn:hover {
+            background: #1f4277;
+          }
+
+          .toggle-btn:hover i,
+          .toggle-btn:hover span {
+            color: white;
+            /* Ensure text stays white on hover for dark background */
+          }
+
+          .toggle-btn.active:hover {
+            background: #f0f0f0;
+          }
+
+          .toggle-btn.active:hover i,
+          .toggle-btn.active:hover span {
+            color: #27579a;
+            /* Keep text blue on hover for active/white background */
+          }
+
+          .hidden-view {
+            display: none;
+          }
+
+          .active-view {
+            display: block;
+          }
+
           .video-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
+            gap: 23px;
             width: 100%;
             margin-top: 70px;
           }
 
-          .video-group {
+          .video-grid .video-group {
             text-align: center;
           }
 
-          .video-group h4 {
+          .video-grid .video-group h4 {
             margin: -10px 0 10px 0;
             color: #27579a;
           }
 
-          /* Add margin to the second row */
-          .video-group:nth-child(n+4) {
+          .video-grid .video-group:nth-child(n+4) {
             margin-top: 20px;
           }
 
-          .video-pair {
+          .video-grid .video-pair {
             display: flex;
-            gap: 7px;
+            gap: 4px;
             justify-content: center;
           }
 
-          .video-container {
+          .video-grid .video-container {
             flex: 1;
             position: relative;
+            max-width: 95%;
+            margin: 0 auto;
           }
 
-          .video-container video {
+          .video-grid .video-container video {
             width: 100%;
             border-radius: 4px;
             margin: 0;
             margin-bottom: 2px;
           }
 
-          .video-wrapper {
+          .video-grid .video-wrapper {
             position: relative;
             width: 100%;
           }
 
-          .video-wrapper::after {
+          .video-grid .video-wrapper::after {
             content: '';
             position: absolute;
             top: 0;
@@ -290,11 +621,11 @@
             transition: opacity 0.2s ease;
           }
 
-          .video-wrapper.highlight::after {
+          .video-grid .video-wrapper.highlight::after {
             opacity: 0.2;
           }
 
-          .video-container p {
+          .video-grid .video-container p {
             margin: 2px 0;
             font-size: 0.9em;
             color: #666;
@@ -302,7 +633,7 @@
             z-index: 1;
           }
 
-          .asterisk-note {
+          .video-grid .asterisk-note {
             grid-column: 1 / -1;
             text-align: center;
             font-size: 0.9em;
@@ -310,13 +641,43 @@
             font-style: italic;
             margin-top: 20px;
           }
+
+          @media (max-width: 1400px) {
+            .view-toggle {
+              left: -120px;
+            }
+          }
         </style>
 
-        <!-- Add the asterisk note after the video grid -->
-        <div class="asterisk-note">
-          *"Ours" scales network depth to 64 layers. We show the results of scaling depth further in <a
-            href="#scaling-limits">Exploring the limits of scaling</a>.
-        </div>
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtns = document.querySelectorAll('.toggle-btn');
+            const galleryView = document.getElementById('gallery-view');
+            const gridView = document.getElementById('grid-view');
+
+            toggleBtns.forEach(btn => {
+              btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                toggleBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+
+                // Toggle views
+                if (btn.dataset.view === 'gallery') {
+                  galleryView.classList.add('hidden-view');
+                  galleryView.classList.remove('active-view');
+                  gridView.classList.add('active-view');
+                  gridView.classList.remove('hidden-view');
+                } else {
+                  gridView.classList.add('hidden-view');
+                  gridView.classList.remove('active-view');
+                  galleryView.classList.add('active-view');
+                  galleryView.classList.remove('hidden-view');
+                }
+              });
+            });
+          });
+        </script>
       </div>
     </section>
 
@@ -485,7 +846,6 @@
           margin-top: 20px;
         }
 
-        /* Add hover effects */
         .block:hover {
           transform: translateY(-5px);
           box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -748,28 +1108,21 @@
           border: 1px solid #ddd;
           border-radius: 8px;
           padding: 25px 30px;
-          /* Increased padding */
           margin: 20px 0;
           width: 100%;
-          /* Changed from 70% to 100% */
           box-sizing: border-box;
         }
 
         .key-findings {
           margin: 0;
           padding-left: 25px;
-          /* Slightly increased padding */
           columns: 2;
-          /* Split into 2 columns */
           column-gap: 40px;
-          /* Space between columns */
         }
 
         .key-findings li {
           margin-bottom: 15px;
-          /* Increased spacing between items */
           break-inside: avoid;
-          /* Prevent items from splitting across columns */
         }
 
         .key-findings li:last-child {
@@ -841,8 +1194,6 @@
           margin-bottom: 0;
         }
       </style>
-
-      <p>Join us! Our <a href="https://github.com/wang-kevin3290/scaling-crl">open-source code</a> makes it easy to start experimenting with these ideas. Reach out if you have ideas about how to solve these open problems!</p>
     </section>
 
     <section>
