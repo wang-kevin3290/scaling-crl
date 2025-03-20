@@ -1,5 +1,5 @@
 # 1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities
-[Paper](https://wang-kevin3290.github.io/scaling-crl/static/pdf/scaling_rl.pdf) | [Code](https://github.com/wang-kevin3290/scaling-crl) | Email kw6487@princeton.edu with questions/comments/suggestions
+[Paper](http://arxiv.org/abs/2503.14858) | [Website](https://wang-kevin3290.github.io/scaling-crl/) | Email kw6487@princeton.edu with questions/comments/suggestions
 
 ## Set up conda environment
 1. Load anaconda module: ```module load anaconda3/2024.2```
