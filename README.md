@@ -81,7 +81,7 @@ python train.py --env_id "humanoid" --eval_env_id "humanoid" --num_epochs 100 --
 **Fix:**
 1. Locate the brax json.py file in your conda environment:
    ```
-   find ~/.conda/envs/expl-env -name json.py | grep "/brax/io/json.py"
+   find ~/.conda/envs/scaling-crl -name json.py | grep "/brax/io/json.py"
    ```
 2. Open the file and change the if statement in line 159 to:
     ```python
