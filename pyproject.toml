@@ -1,0 +1,33 @@
+[project]
+name = "scaling-crl"
+version = "0.1.0"
+description = "1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities"
+readme = "README.md"
+requires-python = "==3.10.*"
+dependencies = [
+    "numpy==1.26.4",
+    "jax==0.4.23",
+    "jaxlib==0.4.23+cuda12.cudnn89; platform_system == 'Linux'",
+    "nvidia-cudnn-cu11>=8.9,<9.0; platform_system == 'Linux'",
+    "nvidia-cuda-cupti-cu12>=12.4; platform_system == 'Linux'",
+    "nvidia-cusolver-cu12>=11.7.3.90; platform_system == 'Linux'",
+    "jaxlib==0.4.23; platform_system != 'Linux'",
+    "flax==0.7.4",
+    "tyro",
+    "wandb==0.17.9",
+    "wandb-osh==1.2.2",
+    "brax==0.10.1",
+    "mediapy==1.2.2",
+    "scipy==1.12.0",
+    "mujoco==3.2.6"
+]
+
+[tool.uv]
+# To install JAX with CUDA support, uv can look at the JAX releases.
+# However, you may need to adjust the jax/jaxlib version constraints to match specific CUDA build strings 
+# or use `jax[cuda12]` if supported by that version.
+find-links = ["https://storage.googleapis.com/jax-releases/jax_cuda_releases.html"]
+
+[[tool.uv.index]]
+url = "https://pypi.nvidia.com/"
+
