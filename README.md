@@ -1,15 +1,40 @@
 # 1000 Layer Networks for Self-Supervised RL: Scaling Depth Can Enable New Goal-Reaching Capabilities
-[Paper](http://arxiv.org/abs/2503.14858) | [Website](https://wang-kevin3290.github.io/scaling-crl/) | Email kw6487@princeton.edu with questions/comments/suggestions
 
-## Set up conda environment
+<p align="center">
+    <a href= "https://arxiv.org/abs/2503.14858">
+        <img src="https://img.shields.io/badge/arXiv-2311.10090-b31b1b.svg" /></a>
+    <a href= "https://github.com/wang-kevin3290/scaling-crl/blob/master/LICENSE">
+        <img src="https://img.shields.io/badge/license-Apache2.0-blue.svg" /></a>
+    <a href= "https://wang-kevin3290.github.io/scaling-crl/">
+        <img src="https://img.shields.io/badge/website-purple" /></a>
+</p>
+
+Email kw6487@princeton.edu with questions/comments/suggestions.
+
+<p align="center"><img src="assets/humanoid_depth.png" width=85%></p>
+
+# Installation
+
+## Using [uv](https://docs.astral.sh/uv/) (recommended)
+```sh
+uv sync
+```
+Just fix the two Brax issues described below, and you’ll be all set.
+
+## Using conda environment
 1. Load anaconda module: ```module load anaconda3/2024.2```
 2. Clone this repository: ```git clone https://github.com/wang-kevin3290/scaling-crl.git```
 3. Create conda environment: ```CONDA_OVERRIDE_CUDA="12.0" conda create --name scaling-crl python=3.10 numpy==1.26.4 jax==0.4.23 "jaxlib==0.4.23=cuda120*" flax==0.7.4 -c conda-forge -c nvidia```
 4. Activate conda environment: ```conda activate scaling-crl```
 5. Install more dependencies: ```pip install tyro wandb==0.17.9 wandb_osh==1.2.2 brax==0.10.1 mediapy==1.2.2 scipy==1.12.0```
 
-## Fixing a few bugs in brax
-6. There is a minor bug in brax's contact.py file. To fix it, first locate the brax contact.py file in your conda environment: 
+
+## Fixing two bugs in BRAX 0.10.1
+1. There is a minor bug in brax's contact.py file. To fix it, first locate the brax contact.py file in your conda environment: 
+```
+find .venv -name contact.py
+```
+For conda installation:
 ```
 find ~/.conda/envs/scaling-crl -name contact.py
 ```
@@ -61,7 +86,11 @@ def get(sys: System, x: Transform) -> Optional[Contact]:
     link_idx = (body1, body2)
     return Contact(elasticity=elasticity, link_idx=link_idx, **c.__dict__)
 ```
-7. There is also a minor bug in brax's json.py file. To fix it, first locate the brax json.py file in your conda environment:
+2. There is also a minor bug in brax's json.py file. To fix it, first locate the brax json.py file in your conda environment:
+```
+find .venv -name json.py | grep "/brax/io/json.py"
+```
+For conda installtion:
 ```
 find ~/.conda/envs/scaling-crl -name json.py | grep "/brax/io/json.py"
 ```
@@ -71,13 +100,23 @@ if (rgba == jp.array([0.5, 0.5, 0.5, 1.0])).all():
 ```
 
 
-## Run training script
-Now, we are ready to run the train script. If you would like the experiments to be synced to wandb, you should go to `train.py` and replace the default values of `wandb_entity` and `wandb_project_name` (line 34-35 of the `train.py` file) with your particular wandb entity and wandb project name. Alternatively, these two can also be set as hyperparameter flags when running the train script.
+# Runnin experiments
+Now, we are ready to run the train script. To run the code, you'll need a GPU. For Humanoid-based environments, it may require up to 80GB of GPU memory (for deep networks). Below is an example command to run the training script (an additional example can be found in the provided slurm script `job.slurm`): 
 
-Now, to run the code, you'll need a GPU. For Humanoid-based environments, it may require up to 80GB of GPU memory. Below is an example command to run the training script (an additional example can be found in the provided slurm script `job.slurm`): 
+uv:
+```
+uv  run train.py --env_id "humanoid" --eval_env_id "humanoid" --num_epochs 100 --total_env_steps 100000000 --critic_depth 16 --actor_depth 16 --actor_skip_connections 4 --critic_skip_connections 4 --batch_size 512 --vis_length 1000 --save_buffer 0 
+```
+Conda:
 ```
 python train.py --env_id "humanoid" --eval_env_id "humanoid" --num_epochs 100 --total_env_steps 100000000 --critic_depth 16 --actor_depth 16 --actor_skip_connections 4 --critic_skip_connections 4 --batch_size 512 --vis_length 1000 --save_buffer 0 
 ```
+
+
+>[!NOTE]
+>If you would like the experiments to be synced to wandb, you should go to `train.py` and replace the default values of `wandb_entity` and `wandb_project_name` (line 34-35 of the `train.py` file) with your particular wandb entity and wandb project name. Alternatively, these two can also be set as hyperparameter flags when running the train script.
+
+
 <!-- 
 ## Troubleshooting Potential Errors
 
