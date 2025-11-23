@@ -4,5 +4,6 @@
 __pycache__/
 *.pyc
 uv.lock
-envs/__pycache__/*
-*.venv
+./envs/__pycache__/*
+*.venv/
+/runs/*
