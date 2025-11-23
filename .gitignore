@@ -3,3 +3,7 @@
 /slurm_logs
 __pycache__/
 *.pyc
+uv.lock
+./envs/__pycache__/*
+*.venv/
+/runs/*
