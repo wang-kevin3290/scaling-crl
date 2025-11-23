@@ -4,3 +4,5 @@
 __pycache__/
 *.pyc
 uv.lock
+envs/__pycache__/*
+*.venv
