@@ -19,7 +19,7 @@ Email kw6487@princeton.edu with questions/comments/suggestions.
 ```sh
 uv sync
 ```
-Just fix the two Brax issues described below, and you’ll be all set.
+Then just fix the two Brax issues described below, and you’ll be all set.
 
 ## Using conda environment
 1. Load anaconda module: ```module load anaconda3/2024.2```
