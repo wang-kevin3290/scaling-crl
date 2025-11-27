@@ -13,14 +13,13 @@ Email kw6487@princeton.edu with questions/comments/suggestions.
 
 # Installation
 
-## Using [uv](https://docs.astral.sh/uv/)
 ```sh
 uv sync
 ```
 Then just fix the two Brax issues described below, and you'll be all set.
 
 
-## Fixing two bugs in BRAX 0.10.1
+## Fixing two bugs in brax 0.10.1
 1. There is a minor bug in brax's contact.py file. To fix it, first locate the brax contact.py file in your virtual environment: 
 ```
 find .venv -name contact.py
