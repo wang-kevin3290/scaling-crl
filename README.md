@@ -9,9 +9,12 @@
         <img src="https://img.shields.io/badge/website-purple" /></a>
 </p>
 
+>[!important] [NEWS: Our work was selected for Best Paper Award at NeurIPS 2025](https://blog.neurips.cc/2025/11/26/announcing-the-neurips-2025-best-paper-awards/#:~:text=1000%20Layer%20Networks%20for%20Self%2DSupervised%20RL%3A%20Scaling%20Depth%20Can%20Enable%20New%20Goal%2DReaching%20Capabilities) 🥳
+
 Email kw6487@princeton.edu with questions/comments/suggestions.
 
 ![Environments](assets/envs.gif)
+Our work builds on top of [JAXGCRL](https://github.com/MichalBortkiewicz/JaxGCRL), feel free to check it out!!
 
 # Installation
 
@@ -95,6 +98,18 @@ uv run train.py --env_id "humanoid" --eval_env_id "humanoid" --num_epochs 100 --
 >[!NOTE]
 >If you would like the experiments to be synced to wandb, you should go to `train.py` and replace the default values of `wandb_entity` and `wandb_project_name` (line 34-35 of the `train.py` file) with your particular wandb entity and wandb project name. Alternatively, these two can also be set as hyperparameter flags when running the train script.
 
+# Citing Scaling CRL 📜
+```bibtex
+@inproceedings{wang2025,
+  title     = {1000 Layer Networks for Self-Supervised {RL}: Scaling Depth Can Enable New Goal-Reaching Capabilities},
+  author    = {Kevin Wang and Ishaan Javali and Micha{\l} Bortkiewicz and Tomasz Trzcinski and Benjamin Eysenbach},
+  booktitle = {The Thirty-ninth Annual Conference on Neural Information Processing Systems},
+  year      = {2025},
+  url       = {https://openreview.net/forum?id=s0JVsx3bx1}
+}
+```
+
+
 
 <!-- 
 ## Troubleshooting Potential Errors
@@ -171,3 +186,4 @@ uv run train.py --env_id "humanoid" --eval_env_id "humanoid" --num_epochs 100 --
     if (rgba == jp.array([0.5, 0.5, 0.5, 1.0])).all():
     ```
 3. Save the file and rerun the training script. -->
+
