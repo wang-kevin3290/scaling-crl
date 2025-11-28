@@ -9,7 +9,8 @@
         <img src="https://img.shields.io/badge/website-purple" /></a>
 </p>
 
->[!important] [NEWS: Our work was selected for Best Paper Award at NeurIPS 2025](https://blog.neurips.cc/2025/11/26/announcing-the-neurips-2025-best-paper-awards/#:~:text=1000%20Layer%20Networks%20for%20Self%2DSupervised%20RL%3A%20Scaling%20Depth%20Can%20Enable%20New%20Goal%2DReaching%20Capabilities) 🥳
+> [!IMPORTANT]  
+> [Our work was selected for the Best Paper Award at NeurIPS 2025!](https://blog.neurips.cc/2025/11/26/announcing-the-neurips-2025-best-paper-awards/#:~:text=1000%20Layer%20Networks%20for%20Self%2DSupervised%20RL%3A%20Scaling%20Depth%20Can%20Enable%20New%20Goal%2DReaching%20Capabilities) 🥳
 
 Email kw6487@princeton.edu with questions/comments/suggestions.
 
