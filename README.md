@@ -11,6 +11,8 @@
 
 Email kw6487@princeton.edu with questions/comments/suggestions.
 
+![Environments](assets/envs.gif)
+
 # Installation
 
 ```sh
