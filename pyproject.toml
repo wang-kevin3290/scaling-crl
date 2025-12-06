@@ -31,3 +31,6 @@ find-links = ["https://storage.googleapis.com/jax-releases/jax_cuda_releases.htm
 [[tool.uv.index]]
 url = "https://pypi.nvidia.com/"
 
+[tool.uv.sources]
+brax = { git = "https://www.github.com/lebrice/brax", rev = "v0.10.1-scaling-crl" }
+
